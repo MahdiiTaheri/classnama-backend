@@ -1,0 +1,42 @@
+# --- Go build artifacts ---
+bin/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+*.tmp
+
+# Go coverage
+coverage.*
+*.coverprofile
+
+# Vendor (if you ever use go mod vendor)
+vendor/
+
+# --- Air (live reload tool) ---
+build-errors.log
+.air.toml.local
+
+# --- Logs ---
+*.log
+logs/
+
+# --- Environment files ---
+.env
+.env.*
+
+# --- Docker ---
+/docker/data/
+*.pid
+
+# --- IDE / Editor ---
+.vscode/
+.idea/
+*.iml
+*.swp
+*.swo
+*.DS_Store
+Thumbs.db
