@@ -9,6 +9,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/MahdiiTaheri/classnama-backend/internal/store"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"go.uber.org/zap"
@@ -17,11 +18,20 @@ import (
 type application struct {
 	config config
 	logger *zap.SugaredLogger
+	store  store.Storage
 }
 
 type config struct {
 	addr string
 	env  string
+	db   dbConfig
+}
+
+type dbConfig struct {
+	addr         string
+	maxOpenConns int
+	maxIdleConns int
+	maxIdleTime  string
 }
 
 func (app *application) mount() http.Handler {
@@ -35,10 +45,7 @@ func (app *application) mount() http.Handler {
 	r.Use(middleware.Timeout(60 * time.Second))
 
 	r.Route("/v1", func(r chi.Router) {
-		// routes
-		r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
-			w.Write([]byte("ok"))
-		})
+		r.Get("/health", app.healthCheckHandler)
 	})
 
 	return r
