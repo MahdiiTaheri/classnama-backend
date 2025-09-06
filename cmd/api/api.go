@@ -55,8 +55,8 @@ func (app *application) mount() http.Handler {
 				r.Use(app.execsContextMiddleware)
 
 				r.Get("/", app.getExecHandler)
-				// r.Patch("/", app.checkPostsOwnership("moderator", app.updatePostHandler))
-				// r.Delete("/", app.checkPostsOwnership("admin", app.deletePostHandler))
+				r.Patch("/", app.updateExecHandler)
+				// r.Delete("/",app.deletePostHandler)
 			})
 		})
 	})

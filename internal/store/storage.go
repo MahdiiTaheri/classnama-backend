@@ -18,6 +18,7 @@ type Storage struct {
 		Create(context.Context, *Exec) error
 		GetAll(context.Context) ([]*Exec, error)
 		GetByID(context.Context, int64) (*Exec, error)
+		Update(context.Context, *Exec) error
 	}
 }
 

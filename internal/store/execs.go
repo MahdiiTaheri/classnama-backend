@@ -127,3 +127,36 @@ func (s *ExecStore) GetByID(ctx context.Context, id int64) (*Exec, error) {
 
 	return &e, nil
 }
+
+func (s *ExecStore) Update(ctx context.Context, exec *Exec) error {
+	query := `
+	UPDATE execs
+	SET first_name = $1,
+	    last_name = $2,
+	    role = $3,
+	    updated_at = NOW()
+	WHERE id = $4
+	RETURNING  updated_at
+	`
+
+	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
+	defer cancel()
+
+	err := s.db.QueryRowContext(ctx,
+		query,
+		exec.FirstName,
+		exec.LastName,
+		exec.Role,
+		exec.ID,
+	).Scan(&exec.UpdatedAt)
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return ErrConflict
+		default:
+			return err
+		}
+	}
+
+	return nil
+}
