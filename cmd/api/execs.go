@@ -96,32 +96,6 @@ func (app *application) getExecHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (app *application) execsContextMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		idParam := chi.URLParam(r, "execID")
-		id, err := strconv.ParseInt(idParam, 10, 64)
-		if err != nil {
-			app.internalServerErrorResponse(w, r, err)
-			return
-		}
-		ctx := r.Context()
-
-		exec, err := app.store.Execs.GetByID(ctx, id)
-		if err != nil {
-			switch {
-			case errors.Is(err, store.ErrNotFound):
-				app.notfoundResponse(w, r, err)
-			default:
-				app.internalServerErrorResponse(w, r, err)
-			}
-			return
-		}
-
-		ctx = context.WithValue(ctx, execCtx, exec)
-		next.ServeHTTP(w, r.WithContext(ctx))
-	})
-}
-
 func (app *application) updateExecHandler(w http.ResponseWriter, r *http.Request) {
 	exec := getExecFromCtx(r)
 	if exec == nil {
@@ -163,6 +137,54 @@ func (app *application) updateExecHandler(w http.ResponseWriter, r *http.Request
 		app.internalServerErrorResponse(w, r, err)
 		return
 	}
+}
+
+func (app *application) deleteExecHandler(w http.ResponseWriter, r *http.Request) {
+	idParam := chi.URLParam(r, "execID")
+	id, err := strconv.ParseInt(idParam, 10, 64)
+	if err != nil {
+		app.internalServerErrorResponse(w, r, err)
+		return
+	}
+	ctx := r.Context()
+
+	if err := app.store.Execs.Delete(ctx, id); err != nil {
+		switch {
+		case errors.Is(err, store.ErrNotFound):
+			app.notfoundResponse(w, r, err)
+		default:
+			app.internalServerErrorResponse(w, r, err)
+		}
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func (app *application) execsContextMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		idParam := chi.URLParam(r, "execID")
+		id, err := strconv.ParseInt(idParam, 10, 64)
+		if err != nil {
+			app.internalServerErrorResponse(w, r, err)
+			return
+		}
+		ctx := r.Context()
+
+		exec, err := app.store.Execs.GetByID(ctx, id)
+		if err != nil {
+			switch {
+			case errors.Is(err, store.ErrNotFound):
+				app.notfoundResponse(w, r, err)
+			default:
+				app.internalServerErrorResponse(w, r, err)
+			}
+			return
+		}
+
+		ctx = context.WithValue(ctx, execCtx, exec)
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
 }
 
 func getExecFromCtx(r *http.Request) *store.Exec {

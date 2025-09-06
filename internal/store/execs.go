@@ -160,3 +160,29 @@ func (s *ExecStore) Update(ctx context.Context, exec *Exec) error {
 
 	return nil
 }
+
+func (s *ExecStore) Delete(ctx context.Context, execID int64) error {
+	query := `
+	DELETE FROM execs
+	WHERE id = $1
+	`
+
+	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
+	defer cancel()
+
+	res, err := s.db.ExecContext(ctx, query, execID)
+	if err != nil {
+		return err
+	}
+
+	// Optional: check if a row was actually deleted
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rowsAffected == 0 {
+		return ErrNotFound
+	}
+
+	return nil
+}

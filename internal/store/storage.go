@@ -19,6 +19,7 @@ type Storage struct {
 		GetAll(context.Context) ([]*Exec, error)
 		GetByID(context.Context, int64) (*Exec, error)
 		Update(context.Context, *Exec) error
+		Delete(context.Context, int64) error
 	}
 }
 
