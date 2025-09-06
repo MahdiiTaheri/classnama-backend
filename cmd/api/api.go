@@ -81,15 +81,15 @@ func (app *application) mount() http.Handler {
 		})
 
 		r.Route("/students", func(r chi.Router) {
-			r.Post("/", app.createTeacherHandler)
-			r.Get("/", app.getTeachersHandler)
+			r.Post("/", app.createStudentHandler)
+			r.Get("/", app.getStudentsHandler)
 
 			r.Route("/{studentID}", func(r chi.Router) {
-				r.Use(app.teachersContextMiddleware)
+				r.Use(app.studentsContextMiddleware)
 
-				r.Get("/", app.getTeacherHandler)
-				r.Patch("/", app.updateTeacherHandler)
-				r.Delete("/", app.deleteTeacherHandler)
+				r.Get("/", app.getStudentHandler)
+				r.Patch("/", app.updateStudentHandler)
+				r.Delete("/", app.deleteStudentHandler)
 			})
 		})
 	})
