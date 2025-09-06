@@ -15,14 +15,14 @@ const (
 )
 
 type Exec struct {
-	ID           int64     `json:"id"`
-	FirstName    string    `json:"first_name"`
-	LastName     string    `json:"last_name"`
-	Email        string    `json:"email"`
-	PasswordHash string    `json:"-"`
-	Role         Role      `json:"role"`
-	CreatedAt    time.Time `json:"created_at"`
-	UpdatedAt    time.Time `json:"updated_at"`
+	ID        int64     `json:"id"`
+	FirstName string    `json:"first_name"`
+	LastName  string    `json:"last_name"`
+	Email     string    `json:"email"`
+	Password  string    `json:"-"`
+	Role      Role      `json:"role"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 type ExecStore struct {
@@ -31,7 +31,7 @@ type ExecStore struct {
 
 func (s *ExecStore) Create(ctx context.Context, exec *Exec) error {
 	query := `
-	INSERT INTO execs (first_name, last_name, email, password_hash, role)
+	INSERT INTO execs (first_name, last_name, email, password, role)
 	VALUES ($1, $2, $3, $4, $5)
 	RETURNING id, created_at, updated_at
 	`
@@ -44,7 +44,7 @@ func (s *ExecStore) Create(ctx context.Context, exec *Exec) error {
 		exec.FirstName,
 		exec.LastName,
 		exec.Email,
-		exec.PasswordHash,
+		exec.Password,
 		exec.Role,
 	).Scan(
 		&exec.ID,

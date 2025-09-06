@@ -1,5 +1,5 @@
 ALTER TABLE execs
-DROP COLUMN IF EXISTS password_hash;
+DROP COLUMN IF EXISTS password;
 
 ALTER TABLE execs
 DROP COLUMN IF EXISTS email;

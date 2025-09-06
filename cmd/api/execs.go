@@ -75,9 +75,6 @@ func (app *application) createExecHandler(w http.ResponseWriter, r *http.Request
 
 	if err := app.jsonResponse(w, http.StatusCreated, exec); err != nil {
 		switch err {
-		case store.ErrConflict:
-			app.conflictResponse(w, r, err)
-			return
 		default:
 			app.internalServerErrorResponse(w, r, err)
 			return
@@ -180,9 +177,6 @@ func (app *application) updateExecHandler(w http.ResponseWriter, r *http.Request
 	// Update in DB
 	if err := app.store.Execs.Update(r.Context(), exec); err != nil {
 		switch err {
-		case store.ErrConflict:
-			app.conflictResponse(w, r, err)
-			return
 		case store.ErrNotFound:
 			app.notfoundResponse(w, r, err)
 			return

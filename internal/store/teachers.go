@@ -8,16 +8,16 @@ import (
 )
 
 type Teacher struct {
-	ID           int64     `json:"id"`
-	FirstName    string    `json:"first_name"`
-	LastName     string    `json:"last_name"`
-	Email        string    `json:"email"`
-	PasswordHash string    `json:"-"`
-	Subject      string    `json:"subject"`
-	PhoneNumber  string    `json:"phone_number"`
-	HireDate     time.Time `json:"hire_date"`
-	CreatedAt    time.Time `json:"created_at"`
-	UpdatedAt    time.Time `json:"updated_at"`
+	ID          int64     `json:"id"`
+	FirstName   string    `json:"first_name"`
+	LastName    string    `json:"last_name"`
+	Email       string    `json:"email"`
+	Password    string    `json:"-"`
+	Subject     string    `json:"subject"`
+	PhoneNumber string    `json:"phone_number"`
+	HireDate    time.Time `json:"hire_date"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
 }
 
 type TeacherStore struct {
@@ -26,7 +26,7 @@ type TeacherStore struct {
 
 func (s *TeacherStore) Create(ctx context.Context, teacher *Teacher) error {
 	query := `
-		INSERT INTO teachers (first_name, last_name, email, password_hash, subject, phone_number, hire_date)
+		INSERT INTO teachers (first_name, last_name, email, password, subject, phone_number, hire_date)
 		VALUES ($1, $2, $3, $4, $5, $6, $7)
 		RETURNING id, created_at, updated_at
 	`
@@ -39,7 +39,7 @@ func (s *TeacherStore) Create(ctx context.Context, teacher *Teacher) error {
 		teacher.FirstName,
 		teacher.LastName,
 		teacher.Email,
-		teacher.PasswordHash,
+		teacher.Password,
 		teacher.Subject,
 		teacher.PhoneNumber,
 		teacher.HireDate,

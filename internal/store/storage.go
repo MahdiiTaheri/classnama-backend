@@ -28,11 +28,14 @@ type Storage struct {
 		Update(context.Context, *Teacher) error
 		Delete(context.Context, int64) error
 	}
+	Students interface {
+	}
 }
 
 func NewStorage(db *sql.DB) Storage {
 	return Storage{
 		Execs:    &ExecStore{db},
 		Teachers: &TeacherStore{db},
+		Students: &StudentStore{db},
 	}
 }

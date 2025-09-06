@@ -77,9 +77,6 @@ func (app *application) createTeacherHandler(w http.ResponseWriter, r *http.Requ
 
 	if err := app.jsonResponse(w, http.StatusCreated, teacher); err != nil {
 		switch err {
-		case store.ErrConflict:
-			app.conflictResponse(w, r, err)
-			return
 		default:
 			app.internalServerErrorResponse(w, r, err)
 			return
@@ -177,9 +174,6 @@ func (app *application) updateTeacherHandler(w http.ResponseWriter, r *http.Requ
 	// Update in DB
 	if err := app.store.Teachers.Update(r.Context(), teacher); err != nil {
 		switch err {
-		case store.ErrConflict:
-			app.conflictResponse(w, r, err)
-			return
 		case store.ErrNotFound:
 			app.notfoundResponse(w, r, err)
 			return
