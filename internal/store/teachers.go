@@ -130,6 +130,55 @@ func (s *TeacherStore) GetByID(ctx context.Context, id int64) (*Teacher, error) 
 	return &t, nil
 }
 
+func (s *StudentStore) GetByTeacherID(ctx context.Context, teacherID int64) ([]*Student, error) {
+	query := `
+		SELECT 
+			id, first_name, last_name, email, password, phone_number, class, birth_date, address, parent_name, parent_phone_number, teacher_id, created_at, updated_at
+		FROM students
+		WHERE teacher_id = $1
+		ORDER BY id ASC
+	`
+
+	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
+	defer cancel()
+
+	rows, err := s.db.QueryContext(ctx, query, teacherID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	students := []*Student{}
+	for rows.Next() {
+		var s Student
+		if err := rows.Scan(
+			&s.ID,
+			&s.FirstName,
+			&s.LastName,
+			&s.Email,
+			&s.Password,
+			&s.PhoneNumber,
+			&s.Class,
+			&s.BirthDate,
+			&s.Address,
+			&s.ParentName,
+			&s.ParentPhoneNumber,
+			&s.TeacherID,
+			&s.CreatedAt,
+			&s.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		students = append(students, &s)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return students, nil
+}
+
 func (s *TeacherStore) Update(ctx context.Context, teacher *Teacher) error {
 	query := `
 		UPDATE teachers

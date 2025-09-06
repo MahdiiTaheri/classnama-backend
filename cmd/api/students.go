@@ -51,7 +51,7 @@ type UpdateStudentPayload struct {
 //	@Accept			json
 //	@Produce		json
 //	@Param			payload	body		CreateStudentPayload	true	"student payload"
-//	@Success		201		{object}	store.student			"Returns the created student"
+//	@Success		201		{object}	store.Student			"Returns the created student"
 //	@Failure		400		{object}	error					"Validation failed"
 //	@Failure		409		{object}	error					"Conflict, student already exists"
 //	@Failure		500		{object}	error					"Internal server error"
@@ -110,7 +110,7 @@ func (app *application) createStudentHandler(w http.ResponseWriter, r *http.Requ
 //	@Summary	Get all students
 //	@Tags		students
 //	@Produce	json
-//	@Success	200	{array}		store.student
+//	@Success	200	{array}		store.Student
 //	@Failure	500	{object}	error
 //	@Security	ApiKeyAuth
 //	@Router		/students [get]
@@ -150,6 +150,47 @@ func (app *application) getStudentHandler(w http.ResponseWriter, r *http.Request
 	}
 
 	if err := app.jsonResponse(w, http.StatusOK, student); err != nil {
+		app.internalServerErrorResponse(w, r, err)
+		return
+	}
+}
+
+// GetStudentsByTeacherID godoc
+//
+//	@Summary		Get students of a teacher
+//	@Description	Returns a list of all students assigned to a specific teacher
+//	@Tags			students
+//	@Accept			json
+//	@Produce		json
+//	@Param			teacherID	path	int	true	"Teacher ID"
+//	@Success		200	{array}	store.Student	"List of students"
+//	@Failure		400	{object}	error			"Bad request"
+//	@Failure		404	{object}	error			"Teacher not found / no students"
+//	@Failure		500	{object}	error			"Internal server error"
+//	@Security		ApiKeyAuth
+//	@Router			/teachers/{teacherID}/students [get]
+//	@ID				getStudentsByTeacher
+func (app *application) getStudentsByTeacherHandler(w http.ResponseWriter, r *http.Request) {
+	teacherIDParam := chi.URLParam(r, "teacherID")
+	teacherID, err := strconv.ParseInt(teacherIDParam, 10, 64)
+	if err != nil {
+		app.badRequestResponse(w, r, fmt.Errorf("invalid teacher ID"))
+		return
+	}
+
+	ctx := r.Context()
+	students, err := app.store.Students.GetByTeacherID(ctx, teacherID)
+	if err != nil {
+		app.internalServerErrorResponse(w, r, err)
+		return
+	}
+
+	if len(students) == 0 {
+		app.notfoundResponse(w, r, fmt.Errorf("no students found for teacher %d", teacherID))
+		return
+	}
+
+	if err := app.jsonResponse(w, http.StatusOK, students); err != nil {
 		app.internalServerErrorResponse(w, r, err)
 		return
 	}
@@ -243,8 +284,6 @@ func (app *application) deleteStudentHandler(w http.ResponseWriter, r *http.Requ
 
 	w.WriteHeader(http.StatusNoContent)
 }
-
-// --- Middleware ---
 
 func (app *application) studentsContextMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

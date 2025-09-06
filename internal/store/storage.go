@@ -34,6 +34,7 @@ type Storage struct {
 		GetByID(context.Context, int64) (*Student, error)
 		Update(context.Context, *Student) error
 		Delete(context.Context, int64) error
+		GetByTeacherID(ctx context.Context, teacherID int64) ([]*Student, error)
 	}
 }
 

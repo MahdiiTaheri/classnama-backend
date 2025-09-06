@@ -75,6 +75,7 @@ func (app *application) mount() http.Handler {
 				r.Use(app.teachersContextMiddleware)
 
 				r.Get("/", app.getTeacherHandler)
+				r.Get("/students", app.getStudentsByTeacherHandler)
 				r.Patch("/", app.updateTeacherHandler)
 				r.Delete("/", app.deleteTeacherHandler)
 			})
