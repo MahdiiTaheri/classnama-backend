@@ -66,6 +66,19 @@ func (app *application) mount() http.Handler {
 				r.Delete("/", app.deleteExecHandler)
 			})
 		})
+
+		r.Route("/teachers", func(r chi.Router) {
+			r.Post("/", app.createTeacherHandler)
+			r.Get("/", app.getTeachersHandler)
+
+			r.Route("/{teacherID}", func(r chi.Router) {
+				r.Use(app.teachersContextMiddleware)
+
+				r.Get("/", app.getTeacherHandler)
+				r.Patch("/", app.updateTeacherHandler)
+				r.Delete("/", app.deleteTeacherHandler)
+			})
+		})
 	})
 
 	return r
