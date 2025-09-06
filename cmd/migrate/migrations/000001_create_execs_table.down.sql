@@ -1,0 +1,2 @@
+DROP TABLE IF EXISTS execs;
+DROP TYPE IF EXISTS exec_role;

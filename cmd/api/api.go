@@ -46,6 +46,18 @@ func (app *application) mount() http.Handler {
 
 	r.Route("/v1", func(r chi.Router) {
 		r.Get("/health", app.healthCheckHandler)
+
+		r.Route("/execs", func(r chi.Router) {
+			r.Post("/", app.createExecHandler)
+
+			// r.Route("/{postID}", func(r chi.Router) {
+			// 	r.Use(app.postsContextMiddleware)
+
+			// 	r.Get("/", app.getPostHandler)
+			// 	r.Patch("/", app.checkPostsOwnership("moderator", app.updatePostHandler))
+			// 	r.Delete("/", app.checkPostsOwnership("admin", app.deletePostHandler))
+			// })
+		})
 	})
 
 	return r
