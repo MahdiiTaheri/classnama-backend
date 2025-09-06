@@ -1,4 +1,69 @@
 basePath: /v1
+definitions:
+  main.CreateExecPayload:
+    properties:
+      email:
+        type: string
+      first_name:
+        maxLength: 72
+        type: string
+      last_name:
+        maxLength: 72
+        type: string
+      role:
+        allOf:
+        - $ref: '#/definitions/store.Role'
+        enum:
+        - admin
+        - manager
+    required:
+    - email
+    - first_name
+    - last_name
+    - role
+    type: object
+  main.UpdateExecPayload:
+    properties:
+      email:
+        type: string
+      first_name:
+        maxLength: 72
+        type: string
+      last_name:
+        maxLength: 72
+        type: string
+      role:
+        allOf:
+        - $ref: '#/definitions/store.Role'
+        enum:
+        - admin
+        - manager
+    type: object
+  store.Exec:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      first_name:
+        type: string
+      id:
+        type: integer
+      last_name:
+        type: string
+      role:
+        $ref: '#/definitions/store.Role'
+      updated_at:
+        type: string
+    type: object
+  store.Role:
+    enum:
+    - admin
+    - manager
+    type: string
+    x-enum-varnames:
+    - RoleAdmin
+    - RoleManager
 info:
   contact:
     email: support@swagger.io
@@ -10,7 +75,172 @@ info:
     url: http://www.apache.org/licenses/LICENSE-2.0.html
   termsOfService: http://swagger.io/terms/
   title: ClassNama
-paths: {}
+paths:
+  /execs:
+    get:
+      consumes:
+      - application/json
+      description: Returns a list of all execs
+      operationId: getExecs
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of execs
+          schema:
+            items:
+              $ref: '#/definitions/store.Exec'
+            type: array
+        "500":
+          description: Internal server error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Get all executives
+      tags:
+      - execs
+    post:
+      consumes:
+      - application/json
+      description: Creates a new executive user with first name, last name, role,
+        and email.
+      operationId: createExec
+      parameters:
+      - description: Exec payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/main.CreateExecPayload'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Returns the created exec object
+          schema:
+            $ref: '#/definitions/store.Exec'
+        "400":
+          description: Bad request, validation failed
+          schema: {}
+        "401":
+          description: Unauthorized
+          schema: {}
+        "403":
+          description: Forbidden
+          schema: {}
+        "409":
+          description: Conflict, exec already exists
+          schema: {}
+        "429":
+          description: Rate limit exceeded
+          schema: {}
+        "500":
+          description: Internal server error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Create a new executive (exec)
+      tags:
+      - execs
+  /execs/{execID}:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes an exec by ID
+      operationId: deleteExec
+      parameters:
+      - description: Exec ID
+        in: path
+        name: execID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Exec not found
+          schema: {}
+        "500":
+          description: Internal server error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Delete an executive
+      tags:
+      - execs
+    get:
+      consumes:
+      - application/json
+      description: Returns a single exec by ID (must be set in context via middleware)
+      operationId: getExec
+      parameters:
+      - description: Exec ID
+        in: path
+        name: execID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Exec object
+          schema:
+            $ref: '#/definitions/store.Exec'
+        "404":
+          description: Exec not found
+          schema: {}
+        "500":
+          description: Internal server error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Get a single executive
+      tags:
+      - execs
+    patch:
+      consumes:
+      - application/json
+      description: Updates an exec. Only non-nil fields in the payload are updated.
+        Versioning ensures concurrency safety.
+      operationId: updateExec
+      parameters:
+      - description: Exec ID
+        in: path
+        name: execID
+        required: true
+        type: integer
+      - description: Exec fields to update
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/main.UpdateExecPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated exec object
+          schema:
+            $ref: '#/definitions/store.Exec'
+        "400":
+          description: Bad request / validation failed
+          schema: {}
+        "404":
+          description: Exec not found
+          schema: {}
+        "409":
+          description: Conflict / concurrent update
+          schema: {}
+        "500":
+          description: Internal server error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Update an executive
+      tags:
+      - execs
 securityDefinitions:
   ApiKeyAuth:
     in: header

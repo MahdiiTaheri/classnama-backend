@@ -30,6 +30,24 @@ type UpdateExecPayload struct {
 	Role      *store.Role `json:"role,omitempty" validate:"omitempty,oneof=admin manager"`
 }
 
+// CreateExec godoc
+//
+//	@Summary		Create a new executive (exec)
+//	@Description	Creates a new executive user with first name, last name, role, and email.
+//	@Tags			execs
+//	@Accept			json
+//	@Produce		json
+//	@Param			payload	body		CreateExecPayload	true	"Exec payload"
+//	@Success		201		{object}	store.Exec			"Returns the created exec object"
+//	@Failure		400		{object}	error				"Bad request, validation failed"
+//	@Failure		401		{object}	error				"Unauthorized"
+//	@Failure		403		{object}	error				"Forbidden"
+//	@Failure		409		{object}	error				"Conflict, exec already exists"
+//	@Failure		429		{object}	error				"Rate limit exceeded"
+//	@Failure		500		{object}	error				"Internal server error"
+//	@Security		ApiKeyAuth
+//	@Router			/execs [post]
+//	@ID				createExec
 func (app *application) createExecHandler(w http.ResponseWriter, r *http.Request) {
 	var payload CreateExecPayload
 	if err := readJSON(w, r, &payload); err != nil {
@@ -56,8 +74,8 @@ func (app *application) createExecHandler(w http.ResponseWriter, r *http.Request
 	}
 
 	if err := app.jsonResponse(w, http.StatusCreated, exec); err != nil {
-		switch {
-		case errors.Is(err, store.ErrConflict):
+		switch err {
+		case store.ErrConflict:
 			app.conflictResponse(w, r, err)
 			return
 		default:
@@ -68,6 +86,18 @@ func (app *application) createExecHandler(w http.ResponseWriter, r *http.Request
 
 }
 
+// GetExecs godoc
+//
+//	@Summary		Get all executives
+//	@Description	Returns a list of all execs
+//	@Tags			execs
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{array}		store.Exec	"List of execs"
+//	@Failure		500	{object}	error		"Internal server error"
+//	@Security		ApiKeyAuth
+//	@Router			/execs [get]
+//	@ID				getExecs
 func (app *application) getExecsHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -83,6 +113,20 @@ func (app *application) getExecsHandler(w http.ResponseWriter, r *http.Request) 
 	}
 }
 
+// GetExec godoc
+//
+//	@Summary		Get a single executive
+//	@Description	Returns a single exec by ID (must be set in context via middleware)
+//	@Tags			execs
+//	@Accept			json
+//	@Produce		json
+//	@Param			execID	path		int			true	"Exec ID"
+//	@Success		200		{object}	store.Exec	"Exec object"
+//	@Failure		404		{object}	error		"Exec not found"
+//	@Failure		500		{object}	error		"Internal server error"
+//	@Security		ApiKeyAuth
+//	@Router			/execs/{execID} [get]
+//	@ID				getExec
 func (app *application) getExecHandler(w http.ResponseWriter, r *http.Request) {
 	exec := getExecFromCtx(r)
 	if exec == nil {
@@ -96,6 +140,23 @@ func (app *application) getExecHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// UpdateExec godoc
+//
+//	@Summary		Update an executive
+//	@Description	Updates an exec. Only non-nil fields in the payload are updated. Versioning ensures concurrency safety.
+//	@Tags			execs
+//	@Accept			json
+//	@Produce		json
+//	@Param			execID	path		int					true	"Exec ID"
+//	@Param			payload	body		UpdateExecPayload	true	"Exec fields to update"
+//	@Success		200		{object}	store.Exec			"Updated exec object"
+//	@Failure		400		{object}	error				"Bad request / validation failed"
+//	@Failure		404		{object}	error				"Exec not found"
+//	@Failure		409		{object}	error				"Conflict / concurrent update"
+//	@Failure		500		{object}	error				"Internal server error"
+//	@Security		ApiKeyAuth
+//	@Router			/execs/{execID} [patch]
+//	@ID				updateExec
 func (app *application) updateExecHandler(w http.ResponseWriter, r *http.Request) {
 	exec := getExecFromCtx(r)
 	if exec == nil {
@@ -139,6 +200,20 @@ func (app *application) updateExecHandler(w http.ResponseWriter, r *http.Request
 	}
 }
 
+// DeleteExec godoc
+//
+//	@Summary		Delete an executive
+//	@Description	Deletes an exec by ID
+//	@Tags			execs
+//	@Accept			json
+//	@Produce		json
+//	@Param			execID	path	int	true	"Exec ID"
+//	@Success		204		"No Content"
+//	@Failure		404		{object}	error	"Exec not found"
+//	@Failure		500		{object}	error	"Internal server error"
+//	@Security		ApiKeyAuth
+//	@Router			/execs/{execID} [delete]
+//	@ID				deleteExec
 func (app *application) deleteExecHandler(w http.ResponseWriter, r *http.Request) {
 	idParam := chi.URLParam(r, "execID")
 	id, err := strconv.ParseInt(idParam, 10, 64)

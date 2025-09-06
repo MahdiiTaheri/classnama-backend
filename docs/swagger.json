@@ -15,7 +15,353 @@
         }
     },
     "basePath": "/v1",
-    "paths": {},
+    "paths": {
+        "/execs": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Returns a list of all execs",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "execs"
+                ],
+                "summary": "Get all executives",
+                "operationId": "getExecs",
+                "responses": {
+                    "200": {
+                        "description": "List of execs",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/store.Exec"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {}
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Creates a new executive user with first name, last name, role, and email.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "execs"
+                ],
+                "summary": "Create a new executive (exec)",
+                "operationId": "createExec",
+                "parameters": [
+                    {
+                        "description": "Exec payload",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/main.CreateExecPayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Returns the created exec object",
+                        "schema": {
+                            "$ref": "#/definitions/store.Exec"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request, validation failed",
+                        "schema": {}
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {}
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {}
+                    },
+                    "409": {
+                        "description": "Conflict, exec already exists",
+                        "schema": {}
+                    },
+                    "429": {
+                        "description": "Rate limit exceeded",
+                        "schema": {}
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {}
+                    }
+                }
+            }
+        },
+        "/execs/{execID}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Returns a single exec by ID (must be set in context via middleware)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "execs"
+                ],
+                "summary": "Get a single executive",
+                "operationId": "getExec",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Exec ID",
+                        "name": "execID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Exec object",
+                        "schema": {
+                            "$ref": "#/definitions/store.Exec"
+                        }
+                    },
+                    "404": {
+                        "description": "Exec not found",
+                        "schema": {}
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {}
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Deletes an exec by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "execs"
+                ],
+                "summary": "Delete an executive",
+                "operationId": "deleteExec",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Exec ID",
+                        "name": "execID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "404": {
+                        "description": "Exec not found",
+                        "schema": {}
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {}
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Updates an exec. Only non-nil fields in the payload are updated. Versioning ensures concurrency safety.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "execs"
+                ],
+                "summary": "Update an executive",
+                "operationId": "updateExec",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Exec ID",
+                        "name": "execID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Exec fields to update",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/main.UpdateExecPayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Updated exec object",
+                        "schema": {
+                            "$ref": "#/definitions/store.Exec"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request / validation failed",
+                        "schema": {}
+                    },
+                    "404": {
+                        "description": "Exec not found",
+                        "schema": {}
+                    },
+                    "409": {
+                        "description": "Conflict / concurrent update",
+                        "schema": {}
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {}
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "main.CreateExecPayload": {
+            "type": "object",
+            "required": [
+                "email",
+                "first_name",
+                "last_name",
+                "role"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string",
+                    "maxLength": 72
+                },
+                "last_name": {
+                    "type": "string",
+                    "maxLength": 72
+                },
+                "role": {
+                    "enum": [
+                        "admin",
+                        "manager"
+                    ],
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/store.Role"
+                        }
+                    ]
+                }
+            }
+        },
+        "main.UpdateExecPayload": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string",
+                    "maxLength": 72
+                },
+                "last_name": {
+                    "type": "string",
+                    "maxLength": 72
+                },
+                "role": {
+                    "enum": [
+                        "admin",
+                        "manager"
+                    ],
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/store.Role"
+                        }
+                    ]
+                }
+            }
+        },
+        "store.Exec": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "role": {
+                    "$ref": "#/definitions/store.Role"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "store.Role": {
+            "type": "string",
+            "enum": [
+                "admin",
+                "manager"
+            ],
+            "x-enum-varnames": [
+                "RoleAdmin",
+                "RoleManager"
+            ]
+        }
+    },
     "securityDefinitions": {
         "ApiKeyAuth": {
             "type": "apiKey",
