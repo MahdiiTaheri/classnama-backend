@@ -22,10 +22,11 @@ type CreateStudentPayload struct {
 	LastName          string `json:"last_name" validate:"required,max=72"`
 	Email             string `json:"email" validate:"required,email"`
 	PhoneNumber       string `json:"phone_number,omitempty" validate:"omitempty,e164"`
-	Class             string `json:"class" validate:"required,max=16"` // e.g., "A101"
+	Class             string `json:"class" validate:"required,max=16"`
 	BirthDate         string `json:"birth_date" validate:"required,datetime=2006-01-02"`
 	Address           string `json:"address" validate:"required,max=256"`
 	ParentName        string `json:"parent_name" validate:"required,max=128"`
+	TeacherID         int64  `json:"teacher_id" validate:"required"`
 	ParentPhoneNumber string `json:"parent_phone_number" validate:"required,e164"`
 }
 
@@ -39,6 +40,7 @@ type UpdateStudentPayload struct {
 	Address           *string `json:"address,omitempty" validate:"omitempty,max=256"`
 	ParentName        *string `json:"parent_name,omitempty" validate:"omitempty,max=128"`
 	ParentPhoneNumber *string `json:"parent_phone_number,omitempty" validate:"omitempty,e164"`
+	TeacherID         *int64  `json:"teacher_id,omitempty" validate:"omitempty"`
 }
 
 // CreateStudent godoc
@@ -84,6 +86,7 @@ func (app *application) createStudentHandler(w http.ResponseWriter, r *http.Requ
 		Address:           payload.Address,
 		ParentName:        payload.ParentName,
 		ParentPhoneNumber: payload.ParentPhoneNumber,
+		TeacherID:         payload.TeacherID,
 	}
 
 	ctx := r.Context()

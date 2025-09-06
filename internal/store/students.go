@@ -19,6 +19,7 @@ type Student struct {
 	Address           string    `json:"address"`
 	ParentName        string    `json:"parent_name"`
 	ParentPhoneNumber string    `json:"parent_phone_number"`
+	TeacherID         int64     `json:"teacher_id"`
 	CreatedAt         time.Time `json:"created_at"`
 	UpdatedAt         time.Time `json:"updated_at"`
 }
@@ -29,8 +30,8 @@ type StudentStore struct {
 
 func (s *StudentStore) Create(ctx context.Context, student *Student) error {
 	query := `
-		INSERT INTO students (first_name, last_name, email, password, phone_number, class, birth_date, address, parent_name, parent_phone_number)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+		INSERT INTO students (first_name, last_name, email, password, phone_number, class, birth_date, address, parent_name, parent_phone_number, teacher_id)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
 		RETURNING id, created_at, updated_at
 	`
 
@@ -49,6 +50,7 @@ func (s *StudentStore) Create(ctx context.Context, student *Student) error {
 		student.Address,
 		student.ParentName,
 		student.ParentPhoneNumber,
+		student.TeacherID,
 	).Scan(
 		&student.ID,
 		&student.CreatedAt,
@@ -63,7 +65,7 @@ func (s *StudentStore) Create(ctx context.Context, student *Student) error {
 
 func (s *StudentStore) GetAll(ctx context.Context) ([]*Student, error) {
 	query := `
-		SELECT id, first_name, last_name, email, phone_number, class, birth_date, address, parent_name, parent_phone_number, created_at, updated_at
+		SELECT id, first_name, last_name, email, phone_number, class, birth_date, address, parent_name, parent_phone_number, teacher_id, created_at, updated_at
 		FROM students
 		ORDER BY id ASC
 	`
@@ -91,6 +93,7 @@ func (s *StudentStore) GetAll(ctx context.Context) ([]*Student, error) {
 			&s.Address,
 			&s.ParentName,
 			&s.ParentPhoneNumber,
+			&s.TeacherID,
 			&s.CreatedAt,
 			&s.UpdatedAt,
 		); err != nil {
@@ -108,7 +111,7 @@ func (s *StudentStore) GetAll(ctx context.Context) ([]*Student, error) {
 
 func (s *StudentStore) GetByID(ctx context.Context, id int64) (*Student, error) {
 	query := `
-		SELECT id, first_name, last_name, email, phone_number, class, birth_date, address, parent_name, parent_phone_number, created_at, updated_at
+		SELECT id, first_name, last_name, email, phone_number, class, birth_date, address, parent_name, parent_phone_number, teacher_id, created_at, updated_at
 		FROM students
 		WHERE id = $1
 	`
@@ -128,6 +131,7 @@ func (s *StudentStore) GetByID(ctx context.Context, id int64) (*Student, error) 
 		&t.Address,
 		&t.ParentName,
 		&t.ParentPhoneNumber,
+		&t.TeacherID,
 		&t.CreatedAt,
 		&t.UpdatedAt,
 	)
@@ -154,8 +158,9 @@ func (s *StudentStore) Update(ctx context.Context, student *Student) error {
 		    address = $7,
 		    parent_name = $8,
 		    parent_phone_number = $9,
+			teacher_id = $10,
 		    updated_at = NOW()
-		WHERE id = $10
+		WHERE id = $11
 		RETURNING updated_at
 	`
 
@@ -172,6 +177,7 @@ func (s *StudentStore) Update(ctx context.Context, student *Student) error {
 		student.Address,
 		student.ParentName,
 		student.ParentPhoneNumber,
+		student.TeacherID,
 		student.ID,
 	).Scan(&student.UpdatedAt)
 
