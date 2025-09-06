@@ -16,6 +16,7 @@ var (
 type Storage struct {
 	Execs interface {
 		Create(context.Context, *Exec) error
+		GetAll(context.Context) ([]*Exec, error)
 	}
 }
 

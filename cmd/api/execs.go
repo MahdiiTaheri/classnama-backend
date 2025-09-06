@@ -54,3 +54,18 @@ func (app *application) createExecHandler(w http.ResponseWriter, r *http.Request
 	}
 
 }
+
+func (app *application) getExecsHandler(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	execs, err := app.store.Execs.GetAll(ctx)
+	if err != nil {
+		app.internalServerErrorResponse(w, r, err)
+		return
+	}
+
+	if err := app.jsonResponse(w, http.StatusOK, execs); err != nil {
+		app.internalServerErrorResponse(w, r, err)
+		return
+	}
+}

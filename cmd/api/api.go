@@ -49,6 +49,7 @@ func (app *application) mount() http.Handler {
 
 		r.Route("/execs", func(r chi.Router) {
 			r.Post("/", app.createExecHandler)
+			r.Get("/", app.getExecsHandler)
 
 			// r.Route("/{postID}", func(r chi.Router) {
 			// 	r.Use(app.postsContextMiddleware)

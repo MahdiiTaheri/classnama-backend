@@ -54,3 +54,43 @@ func (s *ExecStore) Create(ctx context.Context, exec *Exec) error {
 
 	return nil
 }
+
+func (s *ExecStore) GetAll(ctx context.Context) ([]*Exec, error) {
+	query := `
+	SELECT id, first_name, last_name, email, role, created_at, updated_at
+	FROM execs
+	ORDER BY id ASC
+	`
+
+	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
+	defer cancel()
+
+	rows, err := s.db.QueryContext(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	execs := []*Exec{}
+	for rows.Next() {
+		var e Exec
+		if err := rows.Scan(
+			&e.ID,
+			&e.FirstName,
+			&e.LastName,
+			&e.Email,
+			&e.Role,
+			&e.CreatedAt,
+			&e.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		execs = append(execs, &e)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return execs, nil
+}
