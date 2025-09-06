@@ -136,7 +136,7 @@ func (app *application) getStudentsHandler(w http.ResponseWriter, r *http.Reques
 //	@Tags		students
 //	@Produce	json
 //	@Param		studentID	path		int	true	"student ID"
-//	@Success	200			{object}	store.student
+//	@Success	200			{object}	store.Student
 //	@Failure	404			{object}	error
 //	@Failure	500			{object}	error
 //	@Security	ApiKeyAuth
@@ -162,11 +162,11 @@ func (app *application) getStudentHandler(w http.ResponseWriter, r *http.Request
 //	@Tags			students
 //	@Accept			json
 //	@Produce		json
-//	@Param			teacherID	path	int	true	"Teacher ID"
-//	@Success		200	{array}	store.Student	"List of students"
-//	@Failure		400	{object}	error			"Bad request"
-//	@Failure		404	{object}	error			"Teacher not found / no students"
-//	@Failure		500	{object}	error			"Internal server error"
+//	@Param			teacherID	path		int				true	"Teacher ID"
+//	@Success		200			{array}		store.Student	"List of students"
+//	@Failure		400			{object}	error			"Bad request"
+//	@Failure		404			{object}	error			"Teacher not found / no students"
+//	@Failure		500			{object}	error			"Internal server error"
 //	@Security		ApiKeyAuth
 //	@Router			/teachers/{teacherID}/students [get]
 //	@ID				getStudentsByTeacher
@@ -204,7 +204,7 @@ func (app *application) getStudentsByTeacherHandler(w http.ResponseWriter, r *ht
 //	@Produce	json
 //	@Param		studentID	path		int						true	"student ID"
 //	@Param		payload		body		UpdateStudentPayload	true	"student update payload"
-//	@Success	200			{object}	store.student
+//	@Success	200			{object}	store.Student
 //	@Failure	400			{object}	error
 //	@Failure	404			{object}	error
 //	@Failure	409			{object}	error

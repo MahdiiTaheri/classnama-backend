@@ -22,6 +22,44 @@ definitions:
     - last_name
     - role
     type: object
+  main.CreateStudentPayload:
+    properties:
+      address:
+        maxLength: 256
+        type: string
+      birth_date:
+        type: string
+      class:
+        maxLength: 16
+        type: string
+      email:
+        type: string
+      first_name:
+        maxLength: 72
+        type: string
+      last_name:
+        maxLength: 72
+        type: string
+      parent_name:
+        maxLength: 128
+        type: string
+      parent_phone_number:
+        type: string
+      phone_number:
+        type: string
+      teacher_id:
+        type: integer
+    required:
+    - address
+    - birth_date
+    - class
+    - email
+    - first_name
+    - last_name
+    - parent_name
+    - parent_phone_number
+    - teacher_id
+    type: object
   main.CreateTeacherPayload:
     properties:
       email:
@@ -63,6 +101,34 @@ definitions:
         enum:
         - admin
         - manager
+    type: object
+  main.UpdateStudentPayload:
+    properties:
+      address:
+        maxLength: 256
+        type: string
+      birth_date:
+        type: string
+      class:
+        maxLength: 16
+        type: string
+      email:
+        type: string
+      first_name:
+        maxLength: 72
+        type: string
+      last_name:
+        maxLength: 72
+        type: string
+      parent_name:
+        maxLength: 128
+        type: string
+      parent_phone_number:
+        type: string
+      phone_number:
+        type: string
+      teacher_id:
+        type: integer
     type: object
   main.UpdateTeacherPayload:
     properties:
@@ -107,6 +173,35 @@ definitions:
     x-enum-varnames:
     - RoleAdmin
     - RoleManager
+  store.Student:
+    properties:
+      address:
+        type: string
+      birth_date:
+        type: string
+      class:
+        type: string
+      created_at:
+        type: string
+      email:
+        type: string
+      first_name:
+        type: string
+      id:
+        type: integer
+      last_name:
+        type: string
+      parent_name:
+        type: string
+      parent_phone_number:
+        type: string
+      phone_number:
+        type: string
+      teacher_id:
+        type: integer
+      updated_at:
+        type: string
+    type: object
   store.Teacher:
     properties:
       created_at:
@@ -305,6 +400,149 @@ paths:
       summary: Update an executive
       tags:
       - execs
+  /students:
+    get:
+      operationId: getStudents
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/store.Student'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Get all students
+      tags:
+      - students
+    post:
+      consumes:
+      - application/json
+      description: Creates a new student with first name, last name, email, subject,
+        and optional phone.
+      operationId: createstudent
+      parameters:
+      - description: student payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/main.CreateStudentPayload'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Returns the created student
+          schema:
+            $ref: '#/definitions/store.Student'
+        "400":
+          description: Validation failed
+          schema: {}
+        "409":
+          description: Conflict, student already exists
+          schema: {}
+        "500":
+          description: Internal server error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Create a new student
+      tags:
+      - students
+  /students/{studentID}:
+    delete:
+      operationId: deleteStudent
+      parameters:
+      - description: student ID
+        in: path
+        name: studentID
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Delete a student
+      tags:
+      - students
+    get:
+      operationId: getstudent
+      parameters:
+      - description: student ID
+        in: path
+        name: studentID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/store.Student'
+        "404":
+          description: Not Found
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Get a student by ID
+      tags:
+      - students
+    patch:
+      consumes:
+      - application/json
+      operationId: updateStudent
+      parameters:
+      - description: student ID
+        in: path
+        name: studentID
+        required: true
+        type: integer
+      - description: student update payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/main.UpdateStudentPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/store.Student'
+        "400":
+          description: Bad Request
+          schema: {}
+        "404":
+          description: Not Found
+          schema: {}
+        "409":
+          description: Conflict
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Update a student
+      tags:
+      - students
   /teachers:
     get:
       operationId: getTeachers
@@ -448,6 +686,41 @@ paths:
       summary: Update a teacher
       tags:
       - teachers
+  /teachers/{teacherID}/students:
+    get:
+      consumes:
+      - application/json
+      description: Returns a list of all students assigned to a specific teacher
+      operationId: getStudentsByTeacher
+      parameters:
+      - description: Teacher ID
+        in: path
+        name: teacherID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of students
+          schema:
+            items:
+              $ref: '#/definitions/store.Student'
+            type: array
+        "400":
+          description: Bad request
+          schema: {}
+        "404":
+          description: Teacher not found / no students
+          schema: {}
+        "500":
+          description: Internal server error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Get students of a teacher
+      tags:
+      - students
 securityDefinitions:
   ApiKeyAuth:
     in: header

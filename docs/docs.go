@@ -270,6 +270,224 @@ const docTemplate = `{
                 }
             }
         },
+        "/students": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "students"
+                ],
+                "summary": "Get all students",
+                "operationId": "getStudents",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/store.Student"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {}
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Creates a new student with first name, last name, email, subject, and optional phone.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "students"
+                ],
+                "summary": "Create a new student",
+                "operationId": "createstudent",
+                "parameters": [
+                    {
+                        "description": "student payload",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/main.CreateStudentPayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Returns the created student",
+                        "schema": {
+                            "$ref": "#/definitions/store.Student"
+                        }
+                    },
+                    "400": {
+                        "description": "Validation failed",
+                        "schema": {}
+                    },
+                    "409": {
+                        "description": "Conflict, student already exists",
+                        "schema": {}
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {}
+                    }
+                }
+            }
+        },
+        "/students/{studentID}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "students"
+                ],
+                "summary": "Get a student by ID",
+                "operationId": "getstudent",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "student ID",
+                        "name": "studentID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/store.Student"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {}
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {}
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "tags": [
+                    "students"
+                ],
+                "summary": "Delete a student",
+                "operationId": "deleteStudent",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "student ID",
+                        "name": "studentID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {}
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {}
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "students"
+                ],
+                "summary": "Update a student",
+                "operationId": "updateStudent",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "student ID",
+                        "name": "studentID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "student update payload",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/main.UpdateStudentPayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/store.Student"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {}
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {}
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {}
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {}
+                    }
+                }
+            }
+        },
         "/teachers": {
             "get": {
                 "security": [
@@ -487,6 +705,59 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/teachers/{teacherID}/students": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Returns a list of all students assigned to a specific teacher",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "students"
+                ],
+                "summary": "Get students of a teacher",
+                "operationId": "getStudentsByTeacher",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Teacher ID",
+                        "name": "teacherID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of students",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/store.Student"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {}
+                    },
+                    "404": {
+                        "description": "Teacher not found / no students",
+                        "schema": {}
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {}
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -520,6 +791,57 @@ const docTemplate = `{
                             "$ref": "#/definitions/store.Role"
                         }
                     ]
+                }
+            }
+        },
+        "main.CreateStudentPayload": {
+            "type": "object",
+            "required": [
+                "address",
+                "birth_date",
+                "class",
+                "email",
+                "first_name",
+                "last_name",
+                "parent_name",
+                "parent_phone_number",
+                "teacher_id"
+            ],
+            "properties": {
+                "address": {
+                    "type": "string",
+                    "maxLength": 256
+                },
+                "birth_date": {
+                    "type": "string"
+                },
+                "class": {
+                    "type": "string",
+                    "maxLength": 16
+                },
+                "email": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string",
+                    "maxLength": 72
+                },
+                "last_name": {
+                    "type": "string",
+                    "maxLength": 72
+                },
+                "parent_name": {
+                    "type": "string",
+                    "maxLength": 128
+                },
+                "parent_phone_number": {
+                    "type": "string"
+                },
+                "phone_number": {
+                    "type": "string"
+                },
+                "teacher_id": {
+                    "type": "integer"
                 }
             }
         },
@@ -581,6 +903,46 @@ const docTemplate = `{
                             "$ref": "#/definitions/store.Role"
                         }
                     ]
+                }
+            }
+        },
+        "main.UpdateStudentPayload": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string",
+                    "maxLength": 256
+                },
+                "birth_date": {
+                    "type": "string"
+                },
+                "class": {
+                    "type": "string",
+                    "maxLength": 16
+                },
+                "email": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string",
+                    "maxLength": 72
+                },
+                "last_name": {
+                    "type": "string",
+                    "maxLength": 72
+                },
+                "parent_name": {
+                    "type": "string",
+                    "maxLength": 128
+                },
+                "parent_phone_number": {
+                    "type": "string"
+                },
+                "phone_number": {
+                    "type": "string"
+                },
+                "teacher_id": {
+                    "type": "integer"
                 }
             }
         },
@@ -646,6 +1008,50 @@ const docTemplate = `{
                 "RoleAdmin",
                 "RoleManager"
             ]
+        },
+        "store.Student": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "birth_date": {
+                    "type": "string"
+                },
+                "class": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "parent_name": {
+                    "type": "string"
+                },
+                "parent_phone_number": {
+                    "type": "string"
+                },
+                "phone_number": {
+                    "type": "string"
+                },
+                "teacher_id": {
+                    "type": "integer"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
         },
         "store.Teacher": {
             "type": "object",
