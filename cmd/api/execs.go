@@ -1,15 +1,19 @@
 package main
 
 import (
+	"context"
 	"errors"
+	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/MahdiiTaheri/classnama-backend/internal/store"
+	"github.com/go-chi/chi/v5"
 )
 
-// type execKey string
+type execKey string
 
-// const execCtx execKey = "exec"
+const execCtx execKey = "exec"
 
 type CreateExecPayload struct {
 	FirstName string     `json:"first_name" validate:"required,max=72"`
@@ -34,6 +38,7 @@ func (app *application) createExecHandler(w http.ResponseWriter, r *http.Request
 		FirstName: payload.FirstName,
 		LastName:  payload.LastName,
 		Role:      payload.Role,
+		Email:     payload.Email,
 	}
 	ctx := r.Context()
 
@@ -68,4 +73,48 @@ func (app *application) getExecsHandler(w http.ResponseWriter, r *http.Request) 
 		app.internalServerErrorResponse(w, r, err)
 		return
 	}
+}
+
+func (app *application) getExecHandler(w http.ResponseWriter, r *http.Request) {
+	exec := getExecFromCtx(r)
+	if exec == nil {
+		app.notfoundResponse(w, r, fmt.Errorf("exec not found in context"))
+		return
+	}
+
+	if err := app.jsonResponse(w, http.StatusOK, exec); err != nil {
+		app.internalServerErrorResponse(w, r, err)
+		return
+	}
+}
+
+func (app *application) execsContextMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		idParam := chi.URLParam(r, "execID")
+		id, err := strconv.ParseInt(idParam, 10, 64)
+		if err != nil {
+			app.internalServerErrorResponse(w, r, err)
+			return
+		}
+		ctx := r.Context()
+
+		exec, err := app.store.Execs.GetByID(ctx, id)
+		if err != nil {
+			switch {
+			case errors.Is(err, store.ErrNotFound):
+				app.notfoundResponse(w, r, err)
+			default:
+				app.internalServerErrorResponse(w, r, err)
+			}
+			return
+		}
+
+		ctx = context.WithValue(ctx, execCtx, exec)
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
+}
+
+func getExecFromCtx(r *http.Request) *store.Exec {
+	exec, _ := r.Context().Value(execCtx).(*store.Exec)
+	return exec
 }

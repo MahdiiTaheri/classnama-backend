@@ -3,6 +3,7 @@ package store
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"time"
 )
 
@@ -14,7 +15,7 @@ const (
 )
 
 type Exec struct {
-	ID           uint      `json:"id"`
+	ID           int64     `json:"id"`
 	FirstName    string    `json:"first_name"`
 	LastName     string    `json:"last_name"`
 	Email        string    `json:"email"`
@@ -30,8 +31,8 @@ type ExecStore struct {
 
 func (s *ExecStore) Create(ctx context.Context, exec *Exec) error {
 	query := `
-	INSERT INTO execs (first_name, last_name, role)
-	VALUES ($1, $2, $3)
+	INSERT INTO execs (first_name, last_name, email, password_hash, role)
+	VALUES ($1, $2, $3, $4, $5)
 	RETURNING id, created_at, updated_at
 	`
 
@@ -42,6 +43,8 @@ func (s *ExecStore) Create(ctx context.Context, exec *Exec) error {
 		query,
 		exec.FirstName,
 		exec.LastName,
+		exec.Email,
+		exec.PasswordHash,
 		exec.Role,
 	).Scan(
 		&exec.ID,
@@ -93,4 +96,34 @@ func (s *ExecStore) GetAll(ctx context.Context) ([]*Exec, error) {
 	}
 
 	return execs, nil
+}
+
+func (s *ExecStore) GetByID(ctx context.Context, id int64) (*Exec, error) {
+	query := `
+	SELECT id, first_name, last_name, email, role, created_at, updated_at
+	FROM execs
+	WHERE id = $1
+	`
+
+	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
+	defer cancel()
+
+	var e Exec
+	err := s.db.QueryRowContext(ctx, query, id).Scan(
+		&e.ID,
+		&e.FirstName,
+		&e.LastName,
+		&e.Email,
+		&e.Role,
+		&e.CreatedAt,
+		&e.UpdatedAt,
+	)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, ErrNotFound
+		}
+		return nil, err
+	}
+
+	return &e, nil
 }

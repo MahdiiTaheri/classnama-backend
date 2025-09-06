@@ -17,6 +17,7 @@ type Storage struct {
 	Execs interface {
 		Create(context.Context, *Exec) error
 		GetAll(context.Context) ([]*Exec, error)
+		GetByID(context.Context, int64) (*Exec, error)
 	}
 }
 

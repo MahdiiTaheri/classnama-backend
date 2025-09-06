@@ -51,13 +51,13 @@ func (app *application) mount() http.Handler {
 			r.Post("/", app.createExecHandler)
 			r.Get("/", app.getExecsHandler)
 
-			// r.Route("/{postID}", func(r chi.Router) {
-			// 	r.Use(app.postsContextMiddleware)
+			r.Route("/{execID}", func(r chi.Router) {
+				r.Use(app.execsContextMiddleware)
 
-			// 	r.Get("/", app.getPostHandler)
-			// 	r.Patch("/", app.checkPostsOwnership("moderator", app.updatePostHandler))
-			// 	r.Delete("/", app.checkPostsOwnership("admin", app.deletePostHandler))
-			// })
+				r.Get("/", app.getExecHandler)
+				// r.Patch("/", app.checkPostsOwnership("moderator", app.updatePostHandler))
+				// r.Delete("/", app.checkPostsOwnership("admin", app.deletePostHandler))
+			})
 		})
 	})
 
