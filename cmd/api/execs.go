@@ -14,6 +14,7 @@ import (
 type CreateExecPayload struct {
 	FirstName string     `json:"first_name" validate:"required,max=72"`
 	LastName  string     `json:"last_name" validate:"required,max=72"`
+	Email     string     `json:"email" validate:"required,email"`
 	Role      store.Role `json:"role"`
 }
 

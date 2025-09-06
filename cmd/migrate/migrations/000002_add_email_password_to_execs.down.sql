@@ -1,0 +1,5 @@
+ALTER TABLE execs
+DROP COLUMN IF EXISTS password_hash;
+
+ALTER TABLE execs
+DROP COLUMN IF EXISTS email;
