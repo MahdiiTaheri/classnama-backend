@@ -42,7 +42,20 @@ type UpdateStudentPayload struct {
 func (app *application) getStudentsHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	students, err := app.store.Students.GetAll(ctx)
+	pq := store.PaginatedQuery{
+		Limit:  10,
+		Offset: 0,
+		SortBy: "id",
+		Order:  "asc",
+	}
+
+	pq, err := pq.Parse(r)
+	if err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+
+	students, err := app.store.Students.GetAll(ctx, pq)
 	if err != nil {
 		app.internalServerErrorResponse(w, r, err)
 		return

@@ -38,7 +38,20 @@ type UpdateExecPayload struct {
 func (app *application) getExecsHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	execs, err := app.store.Execs.GetAll(ctx)
+	pq := store.PaginatedQuery{
+		Limit:  10,
+		Offset: 0,
+		SortBy: "id",
+		Order:  "asc",
+	}
+
+	pq, err := pq.Parse(r)
+	if err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+
+	execs, err := app.store.Execs.GetAll(ctx, pq)
 	if err != nil {
 		app.internalServerErrorResponse(w, r, err)
 		return

@@ -35,7 +35,7 @@ func (p *password) Set(text string) error {
 type Storage struct {
 	Execs interface {
 		Create(context.Context, *Exec) error
-		GetAll(context.Context) ([]*Exec, error)
+		GetAll(context.Context, PaginatedQuery) ([]*Exec, error)
 		GetByID(context.Context, int64) (*Exec, error)
 		GetByEmail(context.Context, string) (*Exec, error)
 		Update(context.Context, *Exec) error
@@ -43,7 +43,7 @@ type Storage struct {
 	}
 	Teachers interface {
 		Create(context.Context, *Teacher) error
-		GetAll(context.Context) ([]*Teacher, error)
+		GetAll(context.Context, PaginatedQuery) ([]*Teacher, error)
 		GetByID(context.Context, int64) (*Teacher, error)
 		GetByEmail(context.Context, string) (*Teacher, error)
 		Update(context.Context, *Teacher) error
@@ -51,7 +51,7 @@ type Storage struct {
 	}
 	Students interface {
 		Create(context.Context, *Student) error
-		GetAll(context.Context) ([]*Student, error)
+		GetAll(context.Context, PaginatedQuery) ([]*Student, error)
 		GetByID(context.Context, int64) (*Student, error)
 		GetByEmail(context.Context, string) (*Student, error)
 		Update(context.Context, *Student) error

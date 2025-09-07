@@ -58,17 +58,32 @@ func (s *ExecStore) Create(ctx context.Context, exec *Exec) error {
 	return nil
 }
 
-func (s *ExecStore) GetAll(ctx context.Context) ([]*Exec, error) {
+func (s *ExecStore) GetAll(ctx context.Context, pq PaginatedQuery) ([]*Exec, error) {
 	query := `
-	SELECT id, first_name, last_name, email,password, role, created_at, updated_at
-	FROM execs
-	ORDER BY id ASC
+		SELECT id, first_name, last_name, email, role, created_at, updated_at
+		FROM execs
 	`
+
+	// Sorting
+	if pq.SortBy != "" {
+		// ⚠️ Only allow known safe column names to avoid SQL injection
+		switch pq.SortBy {
+		case "id", "first_name", "last_name", "email", "role", "created_at", "updated_at":
+			query += " ORDER BY " + pq.SortBy + " " + pq.Order
+		default:
+			query += " ORDER BY id ASC"
+		}
+	} else {
+		query += " ORDER BY id ASC"
+	}
+
+	// Pagination
+	query += " LIMIT $1 OFFSET $2"
 
 	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
 	defer cancel()
 
-	rows, err := s.db.QueryContext(ctx, query)
+	rows, err := s.db.QueryContext(ctx, query, pq.Limit, pq.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -83,7 +98,6 @@ func (s *ExecStore) GetAll(ctx context.Context) ([]*Exec, error) {
 			&e.LastName,
 			&e.Email,
 			&e.Role,
-			&e.Password.hash,
 			&e.CreatedAt,
 			&e.UpdatedAt,
 		); err != nil {

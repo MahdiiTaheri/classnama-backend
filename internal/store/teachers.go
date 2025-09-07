@@ -55,17 +55,32 @@ func (s *TeacherStore) Create(ctx context.Context, teacher *Teacher) error {
 	return nil
 }
 
-func (s *TeacherStore) GetAll(ctx context.Context) ([]*Teacher, error) {
+func (s *TeacherStore) GetAll(ctx context.Context, pq PaginatedQuery) ([]*Teacher, error) {
 	query := `
-		SELECT id, first_name, last_name, email, subject, phone_number, hire_date, created_at, updated_at
+		SELECT id, first_name, last_name, email, subject, phone_number,
+		       hire_date, created_at, updated_at
 		FROM teachers
-		ORDER BY id ASC
 	`
+
+	// Sorting with whitelist
+	if pq.SortBy != "" {
+		switch pq.SortBy {
+		case "id", "first_name", "last_name", "email", "subject", "hire_date", "created_at", "updated_at":
+			query += " ORDER BY " + pq.SortBy + " " + pq.Order
+		default:
+			query += " ORDER BY id ASC"
+		}
+	} else {
+		query += " ORDER BY id ASC"
+	}
+
+	// Pagination
+	query += " LIMIT $1 OFFSET $2"
 
 	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
 	defer cancel()
 
-	rows, err := s.db.QueryContext(ctx, query)
+	rows, err := s.db.QueryContext(ctx, query, pq.Limit, pq.Offset)
 	if err != nil {
 		return nil, err
 	}
