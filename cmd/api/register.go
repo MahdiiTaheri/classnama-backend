@@ -41,6 +41,19 @@ type StudentRegisterPayload struct {
 	TeacherID         int64     `json:"teacher_id" validate:"required"`
 }
 
+// registerExecHandler godoc
+//
+//	@Summary		Register a new Exec
+//	@Description	Only Execs with manager/admin roles can create new Execs
+//	@Tags			Execs
+//	@Accept			json
+//	@Produce		json
+//	@Param			payload	body		ExecRegisterPayload	true	"Exec registration payload"
+//	@Success		201		{object}	map[string]any		"Returns the created Exec and JWT token"
+//	@Failure		400		{object}	map[string]string	"Bad request"
+//	@Failure		401		{object}	map[string]string	"Unauthorized"
+//	@Failure		500		{object}	map[string]string	"Internal server error"
+//	@Router			/execs/register [post]
 func (app *application) registerExecHandler(w http.ResponseWriter, r *http.Request) {
 	var payload ExecRegisterPayload
 	if err := readJSON(w, r, &payload); err != nil {
@@ -71,6 +84,19 @@ func (app *application) registerExecHandler(w http.ResponseWriter, r *http.Reque
 	app.createAndRespondJWT(w, r, exec, string(exec.Role))
 }
 
+// registerTeacherHandler godoc
+//
+//	@Summary		Register a new Teacher
+//	@Description	Only Execs with manager/admin roles can create new Teachers
+//	@Tags			Teachers
+//	@Accept			json
+//	@Produce		json
+//	@Param			payload	body		TeacherRegisterPayload	true	"Teacher registration payload"
+//	@Success		201		{object}	store.Teacher			"Returns the created Teacher"
+//	@Failure		400		{object}	map[string]string		"Bad request"
+//	@Failure		401		{object}	map[string]string		"Unauthorized"
+//	@Failure		500		{object}	map[string]string		"Internal server error"
+//	@Router			/teachers [post]
 func (app *application) registerTeacherHandler(w http.ResponseWriter, r *http.Request) {
 	var payload TeacherRegisterPayload
 	if err := readJSON(w, r, &payload); err != nil {
@@ -102,6 +128,19 @@ func (app *application) registerTeacherHandler(w http.ResponseWriter, r *http.Re
 	app.jsonResponse(w, http.StatusCreated, teacher)
 }
 
+// registerStudentHandler godoc
+//
+//	@Summary		Register a new Student
+//	@Description	Only Execs with manager/admin roles can create new Students
+//	@Tags			Students
+//	@Accept			json
+//	@Produce		json
+//	@Param			payload	body		StudentRegisterPayload	true	"Student registration payload"
+//	@Success		201		{object}	store.Student			"Returns the created Student"
+//	@Failure		400		{object}	map[string]string		"Bad request"
+//	@Failure		401		{object}	map[string]string		"Unauthorized"
+//	@Failure		500		{object}	map[string]string		"Internal server error"
+//	@Router			/students [post]
 func (app *application) registerStudentHandler(w http.ResponseWriter, r *http.Request) {
 	var payload StudentRegisterPayload
 	if err := readJSON(w, r, &payload); err != nil {

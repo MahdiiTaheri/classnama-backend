@@ -90,6 +90,18 @@ func (app *application) loginHandler(
 	}
 }
 
+// loginExecHandler godoc
+//
+//	@Summary		Exec Login
+//	@Description	Login as an Exec (admin or manager) and get a JWT token
+//	@Tags			Execs
+//	@Accept			json
+//	@Produce		json
+//	@Param			payload	body		LoginPayload		true	"Login payload"
+//	@Success		200		{object}	map[string]any		"Returns the logged-in exec and JWT token"
+//	@Failure		400		{object}	map[string]string	"Bad request"
+//	@Failure		401		{object}	map[string]string	"Unauthorized"
+//	@Router			/execs/login [post]
 func (app *application) loginExecHandler(w http.ResponseWriter, r *http.Request) {
 	app.loginHandler(w, r, func(ctx context.Context, email string) (any, error) {
 		exec, err := app.store.Execs.GetByEmail(ctx, email)
@@ -97,6 +109,18 @@ func (app *application) loginExecHandler(w http.ResponseWriter, r *http.Request)
 	})
 }
 
+// loginTeacherHandler godoc
+//
+//	@Summary		Teacher Login
+//	@Description	Login as a Teacher and get a JWT token
+//	@Tags			Teachers
+//	@Accept			json
+//	@Produce		json
+//	@Param			payload	body		LoginPayload		true	"Login payload"
+//	@Success		200		{object}	map[string]any		"Returns the logged-in teacher and JWT token"
+//	@Failure		400		{object}	map[string]string	"Bad request"
+//	@Failure		401		{object}	map[string]string	"Unauthorized"
+//	@Router			/teachers/login [post]
 func (app *application) loginTeacherHandler(w http.ResponseWriter, r *http.Request) {
 	app.loginHandler(w, r, func(ctx context.Context, email string) (any, error) {
 		teacher, err := app.store.Teachers.GetByEmail(ctx, email)
@@ -104,6 +128,18 @@ func (app *application) loginTeacherHandler(w http.ResponseWriter, r *http.Reque
 	})
 }
 
+// loginStudentHandler godoc
+//
+//	@Summary		Student Login
+//	@Description	Login as a Student and get a JWT token
+//	@Tags			Students
+//	@Accept			json
+//	@Produce		json
+//	@Param			payload	body		LoginPayload		true	"Login payload"
+//	@Success		200		{object}	map[string]any		"Returns the logged-in student and JWT token"
+//	@Failure		400		{object}	map[string]string	"Bad request"
+//	@Failure		401		{object}	map[string]string	"Unauthorized"
+//	@Router			/students/login [post]
 func (app *application) loginStudentHandler(w http.ResponseWriter, r *http.Request) {
 	app.loginHandler(w, r, func(ctx context.Context, email string) (any, error) {
 		student, err := app.store.Students.GetByEmail(ctx, email)

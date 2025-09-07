@@ -16,15 +16,6 @@ type teacherKey string
 
 const teacherCtx teacherKey = "teacher"
 
-type CreateTeacherPayload struct {
-	FirstName   string `json:"first_name" validate:"required,max=72"`
-	LastName    string `json:"last_name" validate:"required,max=72"`
-	Email       string `json:"email" validate:"required,email"`
-	Subject     string `json:"subject" validate:"required,max=128"`
-	PhoneNumber string `json:"phone_number" validate:"required,e164"`
-	HireDate    string `json:"hire_date" validate:"required,datetime=2006-01-02"`
-}
-
 type UpdateTeacherPayload struct {
 	FirstName   *string `json:"first_name,omitempty" validate:"omitempty,max=72"`
 	LastName    *string `json:"last_name,omitempty" validate:"omitempty,max=72"`
@@ -34,60 +25,10 @@ type UpdateTeacherPayload struct {
 	HireDate    *string `json:"hire_date,omitempty" validate:"omitempty,datetime=2006-01-02"`
 }
 
-// CreateTeacher godoc
-//
-//	@Summary		Create a new teacher
-//	@Description	Creates a new teacher with first name, last name, email, subject, and optional phone.
-//	@Tags			teachers
-//	@Accept			json
-//	@Produce		json
-//	@Param			payload	body		CreateTeacherPayload	true	"Teacher payload"
-//	@Success		201		{object}	store.Teacher			"Returns the created teacher"
-//	@Failure		400		{object}	error					"Validation failed"
-//	@Failure		409		{object}	error					"Conflict, teacher already exists"
-//	@Failure		500		{object}	error					"Internal server error"
-//	@Security		ApiKeyAuth
-//	@Router			/teachers [post]
-//	@ID				createTeacher
-// func (app *application) createTeacherHandler(w http.ResponseWriter, r *http.Request) {
-// 	var payload CreateTeacherPayload
-// 	if err := readJSON(w, r, &payload); err != nil {
-// 		writeJSONError(w, http.StatusBadRequest, err.Error())
-// 		return
-// 	}
-
-// 	if err := Validate.Struct(payload); err != nil {
-// 		app.badRequestResponse(w, r, err)
-// 		return
-// 	}
-
-// 	teacher := &store.Teacher{
-// 		FirstName:   payload.FirstName,
-// 		LastName:    payload.LastName,
-// 		Email:       payload.Email,
-// 		Subject:     payload.Subject,
-// 		PhoneNumber: payload.PhoneNumber,
-// 	}
-// 	ctx := r.Context()
-
-// 	if err := app.store.Teachers.Create(ctx, teacher); err != nil {
-// 		app.badRequestResponse(w, r, err)
-// 		return
-// 	}
-
-// 	if err := app.jsonResponse(w, http.StatusCreated, teacher); err != nil {
-// 		switch err {
-// 		default:
-// 			app.internalServerErrorResponse(w, r, err)
-// 			return
-// 		}
-// 	}
-// }
-
 // GetTeachers godoc
 //
 //	@Summary	Get all teachers
-//	@Tags		teachers
+//	@Tags		Teachers
 //	@Produce	json
 //	@Success	200	{array}		store.Teacher
 //	@Failure	500	{object}	error
@@ -112,7 +53,7 @@ func (app *application) getTeachersHandler(w http.ResponseWriter, r *http.Reques
 // GetTeacher godoc
 //
 //	@Summary	Get a teacher by ID
-//	@Tags		teachers
+//	@Tags		Teachers
 //	@Produce	json
 //	@Param		teacherID	path		int	true	"Teacher ID"
 //	@Success	200			{object}	store.Teacher
@@ -137,7 +78,7 @@ func (app *application) getTeacherHandler(w http.ResponseWriter, r *http.Request
 // UpdateTeacher godoc
 //
 //	@Summary	Update a teacher
-//	@Tags		teachers
+//	@Tags		Teachers
 //	@Accept		json
 //	@Produce	json
 //	@Param		teacherID	path		int						true	"Teacher ID"
@@ -193,7 +134,7 @@ func (app *application) updateTeacherHandler(w http.ResponseWriter, r *http.Requ
 // DeleteTeacher godoc
 //
 //	@Summary	Delete a teacher
-//	@Tags		teachers
+//	@Tags		Teachers
 //	@Param		teacherID	path	int	true	"Teacher ID"
 //	@Success	204			"No Content"
 //	@Failure	404			{object}	error

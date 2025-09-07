@@ -39,7 +39,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "execs"
+                    "Execs"
                 ],
                 "summary": "Get all executives",
                 "operationId": "getExecs",
@@ -58,14 +58,11 @@ const docTemplate = `{
                         "schema": {}
                     }
                 }
-            },
+            }
+        },
+        "/execs/login": {
             "post": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "Creates a new executive user with first name, last name, role, and email.",
+                "description": "Login as an Exec (admin or manager) and get a JWT token",
                 "consumes": [
                     "application/json"
                 ],
@@ -73,51 +70,107 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "execs"
+                    "Execs"
                 ],
-                "summary": "Create a new executive (exec)",
-                "operationId": "createExec",
+                "summary": "Exec Login",
                 "parameters": [
                     {
-                        "description": "Exec payload",
+                        "description": "Login payload",
                         "name": "payload",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/main.CreateExecPayload"
+                            "$ref": "#/definitions/main.LoginPayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Returns the logged-in exec and JWT token",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/execs/register": {
+            "post": {
+                "description": "Only Execs with manager/admin roles can create new Execs",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Execs"
+                ],
+                "summary": "Register a new Exec",
+                "parameters": [
+                    {
+                        "description": "Exec registration payload",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/main.ExecRegisterPayload"
                         }
                     }
                 ],
                 "responses": {
                     "201": {
-                        "description": "Returns the created exec object",
+                        "description": "Returns the created Exec and JWT token",
                         "schema": {
-                            "$ref": "#/definitions/store.Exec"
+                            "type": "object",
+                            "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "Bad request, validation failed",
-                        "schema": {}
+                        "description": "Bad request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
                     },
                     "401": {
                         "description": "Unauthorized",
-                        "schema": {}
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {}
-                    },
-                    "409": {
-                        "description": "Conflict, exec already exists",
-                        "schema": {}
-                    },
-                    "429": {
-                        "description": "Rate limit exceeded",
-                        "schema": {}
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
                     },
                     "500": {
                         "description": "Internal server error",
-                        "schema": {}
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
                     }
                 }
             }
@@ -137,7 +190,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "execs"
+                    "Execs"
                 ],
                 "summary": "Get a single executive",
                 "operationId": "getExec",
@@ -181,7 +234,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "execs"
+                    "Execs"
                 ],
                 "summary": "Delete an executive",
                 "operationId": "deleteExec",
@@ -222,7 +275,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "execs"
+                    "Execs"
                 ],
                 "summary": "Update an executive",
                 "operationId": "updateExec",
@@ -281,7 +334,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "students"
+                    "Students"
                 ],
                 "summary": "Get all students",
                 "operationId": "getStudents",
@@ -302,12 +355,7 @@ const docTemplate = `{
                 }
             },
             "post": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "Creates a new student with first name, last name, email, subject, and optional phone.",
+                "description": "Only Execs with manager/admin roles can create new Students",
                 "consumes": [
                     "application/json"
                 ],
@@ -315,39 +363,106 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "students"
+                    "Students"
                 ],
-                "summary": "Create a new student",
-                "operationId": "createstudent",
+                "summary": "Register a new Student",
                 "parameters": [
                     {
-                        "description": "student payload",
+                        "description": "Student registration payload",
                         "name": "payload",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/main.CreateStudentPayload"
+                            "$ref": "#/definitions/main.StudentRegisterPayload"
                         }
                     }
                 ],
                 "responses": {
                     "201": {
-                        "description": "Returns the created student",
+                        "description": "Returns the created Student",
                         "schema": {
                             "$ref": "#/definitions/store.Student"
                         }
                     },
                     "400": {
-                        "description": "Validation failed",
-                        "schema": {}
+                        "description": "Bad request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
                     },
-                    "409": {
-                        "description": "Conflict, student already exists",
-                        "schema": {}
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
                     },
                     "500": {
                         "description": "Internal server error",
-                        "schema": {}
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/students/login": {
+            "post": {
+                "description": "Login as a Student and get a JWT token",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Students"
+                ],
+                "summary": "Student Login",
+                "parameters": [
+                    {
+                        "description": "Login payload",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/main.LoginPayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Returns the logged-in student and JWT token",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
                     }
                 }
             }
@@ -363,7 +478,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "students"
+                    "Students"
                 ],
                 "summary": "Get a student by ID",
                 "operationId": "getstudent",
@@ -400,7 +515,7 @@ const docTemplate = `{
                     }
                 ],
                 "tags": [
-                    "students"
+                    "Students"
                 ],
                 "summary": "Delete a student",
                 "operationId": "deleteStudent",
@@ -440,7 +555,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "students"
+                    "Students"
                 ],
                 "summary": "Update a student",
                 "operationId": "updateStudent",
@@ -499,7 +614,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "teachers"
+                    "Teachers"
                 ],
                 "summary": "Get all teachers",
                 "operationId": "getTeachers",
@@ -520,12 +635,7 @@ const docTemplate = `{
                 }
             },
             "post": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "Creates a new teacher with first name, last name, email, subject, and optional phone.",
+                "description": "Only Execs with manager/admin roles can create new Teachers",
                 "consumes": [
                     "application/json"
                 ],
@@ -533,39 +643,106 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "teachers"
+                    "Teachers"
                 ],
-                "summary": "Create a new teacher",
-                "operationId": "createTeacher",
+                "summary": "Register a new Teacher",
                 "parameters": [
                     {
-                        "description": "Teacher payload",
+                        "description": "Teacher registration payload",
                         "name": "payload",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/main.CreateTeacherPayload"
+                            "$ref": "#/definitions/main.TeacherRegisterPayload"
                         }
                     }
                 ],
                 "responses": {
                     "201": {
-                        "description": "Returns the created teacher",
+                        "description": "Returns the created Teacher",
                         "schema": {
                             "$ref": "#/definitions/store.Teacher"
                         }
                     },
                     "400": {
-                        "description": "Validation failed",
-                        "schema": {}
+                        "description": "Bad request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
                     },
-                    "409": {
-                        "description": "Conflict, teacher already exists",
-                        "schema": {}
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
                     },
                     "500": {
                         "description": "Internal server error",
-                        "schema": {}
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/teachers/login": {
+            "post": {
+                "description": "Login as a Teacher and get a JWT token",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Teachers"
+                ],
+                "summary": "Teacher Login",
+                "parameters": [
+                    {
+                        "description": "Login payload",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/main.LoginPayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Returns the logged-in teacher and JWT token",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
                     }
                 }
             }
@@ -581,7 +758,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "teachers"
+                    "Teachers"
                 ],
                 "summary": "Get a teacher by ID",
                 "operationId": "getTeacher",
@@ -618,7 +795,7 @@ const docTemplate = `{
                     }
                 ],
                 "tags": [
-                    "teachers"
+                    "Teachers"
                 ],
                 "summary": "Delete a teacher",
                 "operationId": "deleteTeacher",
@@ -658,7 +835,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "teachers"
+                    "Teachers"
                 ],
                 "summary": "Update a teacher",
                 "operationId": "updateTeacher",
@@ -721,7 +898,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "students"
+                    "Students"
                 ],
                 "summary": "Get students of a teacher",
                 "operationId": "getStudentsByTeacher",
@@ -761,12 +938,13 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "main.CreateExecPayload": {
+        "main.ExecRegisterPayload": {
             "type": "object",
             "required": [
                 "email",
                 "first_name",
                 "last_name",
+                "password",
                 "role"
             ],
             "properties": {
@@ -781,20 +959,38 @@ const docTemplate = `{
                     "type": "string",
                     "maxLength": 72
                 },
+                "password": {
+                    "type": "string",
+                    "maxLength": 72,
+                    "minLength": 8
+                },
                 "role": {
+                    "type": "string",
                     "enum": [
                         "admin",
                         "manager"
-                    ],
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/store.Role"
-                        }
                     ]
                 }
             }
         },
-        "main.CreateStudentPayload": {
+        "main.LoginPayload": {
+            "type": "object",
+            "required": [
+                "email",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string",
+                    "maxLength": 72,
+                    "minLength": 8
+                }
+            }
+        },
+        "main.StudentRegisterPayload": {
             "type": "object",
             "required": [
                 "address",
@@ -805,19 +1001,18 @@ const docTemplate = `{
                 "last_name",
                 "parent_name",
                 "parent_phone_number",
+                "password",
                 "teacher_id"
             ],
             "properties": {
                 "address": {
-                    "type": "string",
-                    "maxLength": 256
+                    "type": "string"
                 },
                 "birth_date": {
                     "type": "string"
                 },
                 "class": {
-                    "type": "string",
-                    "maxLength": 16
+                    "type": "string"
                 },
                 "email": {
                     "type": "string"
@@ -831,11 +1026,15 @@ const docTemplate = `{
                     "maxLength": 72
                 },
                 "parent_name": {
-                    "type": "string",
-                    "maxLength": 128
+                    "type": "string"
                 },
                 "parent_phone_number": {
                     "type": "string"
+                },
+                "password": {
+                    "type": "string",
+                    "maxLength": 72,
+                    "minLength": 8
                 },
                 "phone_number": {
                     "type": "string"
@@ -845,13 +1044,14 @@ const docTemplate = `{
                 }
             }
         },
-        "main.CreateTeacherPayload": {
+        "main.TeacherRegisterPayload": {
             "type": "object",
             "required": [
                 "email",
                 "first_name",
                 "hire_date",
                 "last_name",
+                "password",
                 "phone_number",
                 "subject"
             ],
@@ -869,6 +1069,11 @@ const docTemplate = `{
                 "last_name": {
                     "type": "string",
                     "maxLength": 72
+                },
+                "password": {
+                    "type": "string",
+                    "maxLength": 72,
+                    "minLength": 8
                 },
                 "phone_number": {
                     "type": "string"

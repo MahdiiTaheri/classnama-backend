@@ -1,6 +1,6 @@
 basePath: /v1
 definitions:
-  main.CreateExecPayload:
+  main.ExecRegisterPayload:
     properties:
       email:
         type: string
@@ -10,27 +10,41 @@ definitions:
       last_name:
         maxLength: 72
         type: string
+      password:
+        maxLength: 72
+        minLength: 8
+        type: string
       role:
-        allOf:
-        - $ref: '#/definitions/store.Role'
         enum:
         - admin
         - manager
+        type: string
     required:
     - email
     - first_name
     - last_name
+    - password
     - role
     type: object
-  main.CreateStudentPayload:
+  main.LoginPayload:
+    properties:
+      email:
+        type: string
+      password:
+        maxLength: 72
+        minLength: 8
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  main.StudentRegisterPayload:
     properties:
       address:
-        maxLength: 256
         type: string
       birth_date:
         type: string
       class:
-        maxLength: 16
         type: string
       email:
         type: string
@@ -41,9 +55,12 @@ definitions:
         maxLength: 72
         type: string
       parent_name:
-        maxLength: 128
         type: string
       parent_phone_number:
+        type: string
+      password:
+        maxLength: 72
+        minLength: 8
         type: string
       phone_number:
         type: string
@@ -58,9 +75,10 @@ definitions:
     - last_name
     - parent_name
     - parent_phone_number
+    - password
     - teacher_id
     type: object
-  main.CreateTeacherPayload:
+  main.TeacherRegisterPayload:
     properties:
       email:
         type: string
@@ -72,6 +90,10 @@ definitions:
       last_name:
         maxLength: 72
         type: string
+      password:
+        maxLength: 72
+        minLength: 8
+        type: string
       phone_number:
         type: string
       subject:
@@ -82,6 +104,7 @@ definitions:
     - first_name
     - hire_date
     - last_name
+    - password
     - phone_number
     - subject
     type: object
@@ -257,50 +280,7 @@ paths:
       - ApiKeyAuth: []
       summary: Get all executives
       tags:
-      - execs
-    post:
-      consumes:
-      - application/json
-      description: Creates a new executive user with first name, last name, role,
-        and email.
-      operationId: createExec
-      parameters:
-      - description: Exec payload
-        in: body
-        name: payload
-        required: true
-        schema:
-          $ref: '#/definitions/main.CreateExecPayload'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Returns the created exec object
-          schema:
-            $ref: '#/definitions/store.Exec'
-        "400":
-          description: Bad request, validation failed
-          schema: {}
-        "401":
-          description: Unauthorized
-          schema: {}
-        "403":
-          description: Forbidden
-          schema: {}
-        "409":
-          description: Conflict, exec already exists
-          schema: {}
-        "429":
-          description: Rate limit exceeded
-          schema: {}
-        "500":
-          description: Internal server error
-          schema: {}
-      security:
-      - ApiKeyAuth: []
-      summary: Create a new executive (exec)
-      tags:
-      - execs
+      - Execs
   /execs/{execID}:
     delete:
       consumes:
@@ -328,7 +308,7 @@ paths:
       - ApiKeyAuth: []
       summary: Delete an executive
       tags:
-      - execs
+      - Execs
     get:
       consumes:
       - application/json
@@ -357,7 +337,7 @@ paths:
       - ApiKeyAuth: []
       summary: Get a single executive
       tags:
-      - execs
+      - Execs
     patch:
       consumes:
       - application/json
@@ -399,7 +379,83 @@ paths:
       - ApiKeyAuth: []
       summary: Update an executive
       tags:
-      - execs
+      - Execs
+  /execs/login:
+    post:
+      consumes:
+      - application/json
+      description: Login as an Exec (admin or manager) and get a JWT token
+      parameters:
+      - description: Login payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/main.LoginPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Returns the logged-in exec and JWT token
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Exec Login
+      tags:
+      - Execs
+  /execs/register:
+    post:
+      consumes:
+      - application/json
+      description: Only Execs with manager/admin roles can create new Execs
+      parameters:
+      - description: Exec registration payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/main.ExecRegisterPayload'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Returns the created Exec and JWT token
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Register a new Exec
+      tags:
+      - Execs
   /students:
     get:
       operationId: getStudents
@@ -419,41 +475,46 @@ paths:
       - ApiKeyAuth: []
       summary: Get all students
       tags:
-      - students
+      - Students
     post:
       consumes:
       - application/json
-      description: Creates a new student with first name, last name, email, subject,
-        and optional phone.
-      operationId: createstudent
+      description: Only Execs with manager/admin roles can create new Students
       parameters:
-      - description: student payload
+      - description: Student registration payload
         in: body
         name: payload
         required: true
         schema:
-          $ref: '#/definitions/main.CreateStudentPayload'
+          $ref: '#/definitions/main.StudentRegisterPayload'
       produces:
       - application/json
       responses:
         "201":
-          description: Returns the created student
+          description: Returns the created Student
           schema:
             $ref: '#/definitions/store.Student'
         "400":
-          description: Validation failed
-          schema: {}
-        "409":
-          description: Conflict, student already exists
-          schema: {}
+          description: Bad request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
         "500":
           description: Internal server error
-          schema: {}
-      security:
-      - ApiKeyAuth: []
-      summary: Create a new student
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Register a new Student
       tags:
-      - students
+      - Students
   /students/{studentID}:
     delete:
       operationId: deleteStudent
@@ -476,7 +537,7 @@ paths:
       - ApiKeyAuth: []
       summary: Delete a student
       tags:
-      - students
+      - Students
     get:
       operationId: getstudent
       parameters:
@@ -502,7 +563,7 @@ paths:
       - ApiKeyAuth: []
       summary: Get a student by ID
       tags:
-      - students
+      - Students
     patch:
       consumes:
       - application/json
@@ -542,7 +603,42 @@ paths:
       - ApiKeyAuth: []
       summary: Update a student
       tags:
-      - students
+      - Students
+  /students/login:
+    post:
+      consumes:
+      - application/json
+      description: Login as a Student and get a JWT token
+      parameters:
+      - description: Login payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/main.LoginPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Returns the logged-in student and JWT token
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Student Login
+      tags:
+      - Students
   /teachers:
     get:
       operationId: getTeachers
@@ -562,41 +658,46 @@ paths:
       - ApiKeyAuth: []
       summary: Get all teachers
       tags:
-      - teachers
+      - Teachers
     post:
       consumes:
       - application/json
-      description: Creates a new teacher with first name, last name, email, subject,
-        and optional phone.
-      operationId: createTeacher
+      description: Only Execs with manager/admin roles can create new Teachers
       parameters:
-      - description: Teacher payload
+      - description: Teacher registration payload
         in: body
         name: payload
         required: true
         schema:
-          $ref: '#/definitions/main.CreateTeacherPayload'
+          $ref: '#/definitions/main.TeacherRegisterPayload'
       produces:
       - application/json
       responses:
         "201":
-          description: Returns the created teacher
+          description: Returns the created Teacher
           schema:
             $ref: '#/definitions/store.Teacher'
         "400":
-          description: Validation failed
-          schema: {}
-        "409":
-          description: Conflict, teacher already exists
-          schema: {}
+          description: Bad request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
         "500":
           description: Internal server error
-          schema: {}
-      security:
-      - ApiKeyAuth: []
-      summary: Create a new teacher
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Register a new Teacher
       tags:
-      - teachers
+      - Teachers
   /teachers/{teacherID}:
     delete:
       operationId: deleteTeacher
@@ -619,7 +720,7 @@ paths:
       - ApiKeyAuth: []
       summary: Delete a teacher
       tags:
-      - teachers
+      - Teachers
     get:
       operationId: getTeacher
       parameters:
@@ -645,7 +746,7 @@ paths:
       - ApiKeyAuth: []
       summary: Get a teacher by ID
       tags:
-      - teachers
+      - Teachers
     patch:
       consumes:
       - application/json
@@ -685,7 +786,7 @@ paths:
       - ApiKeyAuth: []
       summary: Update a teacher
       tags:
-      - teachers
+      - Teachers
   /teachers/{teacherID}/students:
     get:
       consumes:
@@ -720,7 +821,42 @@ paths:
       - ApiKeyAuth: []
       summary: Get students of a teacher
       tags:
-      - students
+      - Students
+  /teachers/login:
+    post:
+      consumes:
+      - application/json
+      description: Login as a Teacher and get a JWT token
+      parameters:
+      - description: Login payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/main.LoginPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Returns the logged-in teacher and JWT token
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Teacher Login
+      tags:
+      - Teachers
 securityDefinitions:
   ApiKeyAuth:
     in: header

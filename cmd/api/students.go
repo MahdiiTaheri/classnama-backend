@@ -16,19 +16,6 @@ type studentKey string
 
 const studentCtx studentKey = "student"
 
-type CreateStudentPayload struct {
-	FirstName         string `json:"first_name" validate:"required,max=72"`
-	LastName          string `json:"last_name" validate:"required,max=72"`
-	Email             string `json:"email" validate:"required,email"`
-	PhoneNumber       string `json:"phone_number,omitempty" validate:"omitempty,e164"`
-	Class             string `json:"class" validate:"required,max=16"`
-	BirthDate         string `json:"birth_date" validate:"required,datetime=2006-01-02"`
-	Address           string `json:"address" validate:"required,max=256"`
-	ParentName        string `json:"parent_name" validate:"required,max=128"`
-	TeacherID         int64  `json:"teacher_id" validate:"required"`
-	ParentPhoneNumber string `json:"parent_phone_number" validate:"required,e164"`
-}
-
 type UpdateStudentPayload struct {
 	FirstName         *string `json:"first_name,omitempty" validate:"omitempty,max=72"`
 	LastName          *string `json:"last_name,omitempty" validate:"omitempty,max=72"`
@@ -42,72 +29,10 @@ type UpdateStudentPayload struct {
 	TeacherID         *int64  `json:"teacher_id,omitempty" validate:"omitempty"`
 }
 
-// CreateStudent godoc
-//
-//	@Summary		Create a new student
-//	@Description	Creates a new student with first name, last name, email, subject, and optional phone.
-//	@Tags			students
-//	@Accept			json
-//	@Produce		json
-//	@Param			payload	body		CreateStudentPayload	true	"student payload"
-//	@Success		201		{object}	store.Student			"Returns the created student"
-//	@Failure		400		{object}	error					"Validation failed"
-//	@Failure		409		{object}	error					"Conflict, student already exists"
-//	@Failure		500		{object}	error					"Internal server error"
-//	@Security		ApiKeyAuth
-//	@Router			/students [post]
-//	@ID				createstudent
-// func (app *application) createStudentHandler(w http.ResponseWriter, r *http.Request) {
-// 	var payload CreateStudentPayload
-// 	if err := readJSON(w, r, &payload); err != nil {
-// 		writeJSONError(w, http.StatusBadRequest, err.Error())
-// 		return
-// 	}
-
-// 	if err := Validate.Struct(payload); err != nil {
-// 		app.badRequestResponse(w, r, err)
-// 		return
-// 	}
-
-// 	birthDate, err := time.Parse("2006-01-02", payload.BirthDate)
-// 	if err != nil {
-// 		app.badRequestResponse(w, r, fmt.Errorf("invalid birth_date format: %w", err))
-// 		return
-// 	}
-
-// 	student := &store.Student{
-// 		FirstName:         payload.FirstName,
-// 		LastName:          payload.LastName,
-// 		Email:             payload.Email,
-// 		PhoneNumber:       &payload.PhoneNumber,
-// 		Class:             payload.Class,
-// 		BirthDate:         birthDate,
-// 		Address:           payload.Address,
-// 		ParentName:        payload.ParentName,
-// 		ParentPhoneNumber: payload.ParentPhoneNumber,
-// 		TeacherID:         payload.TeacherID,
-// 	}
-
-// 	ctx := r.Context()
-
-// 	if err := app.store.Students.Create(ctx, student); err != nil {
-// 		app.badRequestResponse(w, r, err)
-// 		return
-// 	}
-
-// 	if err := app.jsonResponse(w, http.StatusCreated, student); err != nil {
-// 		switch err {
-// 		default:
-// 			app.internalServerErrorResponse(w, r, err)
-// 			return
-// 		}
-// 	}
-// }
-
 // GetStudents godoc
 //
 //	@Summary	Get all students
-//	@Tags		students
+//	@Tags		Students
 //	@Produce	json
 //	@Success	200	{array}		store.Student
 //	@Failure	500	{object}	error
@@ -132,7 +57,7 @@ func (app *application) getStudentsHandler(w http.ResponseWriter, r *http.Reques
 // Getstudent godoc
 //
 //	@Summary	Get a student by ID
-//	@Tags		students
+//	@Tags		Students
 //	@Produce	json
 //	@Param		studentID	path		int	true	"student ID"
 //	@Success	200			{object}	store.Student
@@ -158,7 +83,7 @@ func (app *application) getStudentHandler(w http.ResponseWriter, r *http.Request
 //
 //	@Summary		Get students of a teacher
 //	@Description	Returns a list of all students assigned to a specific teacher
-//	@Tags			students
+//	@Tags			Students
 //	@Accept			json
 //	@Produce		json
 //	@Param			teacherID	path		int				true	"Teacher ID"
@@ -198,7 +123,7 @@ func (app *application) getStudentsByTeacherHandler(w http.ResponseWriter, r *ht
 // UpdateStudent godoc
 //
 //	@Summary	Update a student
-//	@Tags		students
+//	@Tags		Students
 //	@Accept		json
 //	@Produce	json
 //	@Param		studentID	path		int						true	"student ID"
@@ -254,7 +179,7 @@ func (app *application) updateStudentHandler(w http.ResponseWriter, r *http.Requ
 // DeleteStudent godoc
 //
 //	@Summary	Delete a student
-//	@Tags		students
+//	@Tags		Students
 //	@Param		studentID	path	int	true	"student ID"
 //	@Success	204			"No Content"
 //	@Failure	404			{object}	error
