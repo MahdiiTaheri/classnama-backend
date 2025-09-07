@@ -12,7 +12,7 @@ type Student struct {
 	FirstName         string    `json:"first_name"`
 	LastName          string    `json:"last_name"`
 	Email             string    `json:"email"`
-	Password          string    `json:"-"`
+	Password          password  `json:"-"`
 	PhoneNumber       *string   `json:"phone_number"`
 	Class             string    `json:"class"`
 	BirthDate         time.Time `json:"birth_date"`
@@ -43,7 +43,7 @@ func (s *StudentStore) Create(ctx context.Context, student *Student) error {
 		student.FirstName,
 		student.LastName,
 		student.Email,
-		student.Password,
+		student.Password.hash,
 		student.PhoneNumber,
 		student.Class,
 		student.BirthDate,
@@ -121,6 +121,43 @@ func (s *StudentStore) GetByID(ctx context.Context, id int64) (*Student, error) 
 
 	var t Student
 	err := s.db.QueryRowContext(ctx, query, id).Scan(
+		&t.ID,
+		&t.FirstName,
+		&t.LastName,
+		&t.Email,
+		&t.PhoneNumber,
+		&t.Class,
+		&t.BirthDate,
+		&t.Address,
+		&t.ParentName,
+		&t.ParentPhoneNumber,
+		&t.TeacherID,
+		&t.CreatedAt,
+		&t.UpdatedAt,
+	)
+
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, ErrNotFound
+		}
+		return nil, err
+	}
+
+	return &t, nil
+}
+
+func (s *StudentStore) GetByEmail(ctx context.Context, email string) (*Student, error) {
+	query := `
+		SELECT id, first_name, last_name, email, phone_number, class, birth_date, address, parent_name, parent_phone_number, teacher_id, created_at, updated_at
+		FROM students
+		WHERE email = $1
+	`
+
+	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
+	defer cancel()
+
+	var t Student
+	err := s.db.QueryRowContext(ctx, query, email).Scan(
 		&t.ID,
 		&t.FirstName,
 		&t.LastName,

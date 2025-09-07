@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/MahdiiTaheri/classnama-backend/docs"
+	"github.com/MahdiiTaheri/classnama-backend/internal/auth"
 	"github.com/MahdiiTaheri/classnama-backend/internal/store"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -19,9 +20,10 @@ import (
 )
 
 type application struct {
-	config config
-	logger *zap.SugaredLogger
-	store  store.Storage
+	config        config
+	logger        *zap.SugaredLogger
+	store         store.Storage
+	authenticator auth.Authenticator
 }
 
 type config struct {
@@ -29,6 +31,7 @@ type config struct {
 	env    string
 	apiURL string
 	db     dbConfig
+	auth   authConfig
 }
 
 type dbConfig struct {
@@ -36,6 +39,22 @@ type dbConfig struct {
 	maxOpenConns int
 	maxIdleConns int
 	maxIdleTime  string
+}
+
+type authConfig struct {
+	basic basicConfig
+	token tokenConfig
+}
+
+type tokenConfig struct {
+	secret string
+	exp    time.Duration
+	iss    string
+}
+
+type basicConfig struct {
+	user string
+	pass string
 }
 
 func (app *application) mount() http.Handler {
@@ -55,44 +74,66 @@ func (app *application) mount() http.Handler {
 		r.Get("/swagger/*", httpSwagger.Handler(httpSwagger.URL(docsURL)))
 
 		r.Route("/execs", func(r chi.Router) {
-			r.Post("/", app.createExecHandler)
-			r.Get("/", app.getExecsHandler)
+			// PUBLIC
+			r.Post("/register", app.registerExecHandler)
+			r.Post("/login", app.loginExecHandler)
 
-			r.Route("/{execID}", func(r chi.Router) {
-				r.Use(app.execsContextMiddleware)
+			// PROTECTED
+			r.Group(func(r chi.Router) {
+				r.Use(app.AuthTokenMiddleware)
+				r.Use(app.requireRole("admin", "manager")) // only execs can access
+				r.Get("/", app.getExecsHandler)
 
-				r.Get("/", app.getExecHandler)
-				r.Patch("/", app.updateExecHandler)
-				r.Delete("/", app.deleteExecHandler)
+				r.Route("/{execID}", func(r chi.Router) {
+					r.Use(app.execsContextMiddleware) // ONLY for routes with execID
+					r.Get("/", app.getExecHandler)
+					r.Patch("/", app.updateExecHandler)
+					r.Delete("/", app.deleteExecHandler)
+				})
 			})
 		})
 
 		r.Route("/teachers", func(r chi.Router) {
-			r.Post("/", app.createTeacherHandler)
-			r.Get("/", app.getTeachersHandler)
+			// PUBLIC LOGIN
+			r.Post("/login", app.loginTeacherHandler)
 
-			r.Route("/{teacherID}", func(r chi.Router) {
-				r.Use(app.teachersContextMiddleware)
+			// PROTECTED: Only execs can manage teachers
+			r.Group(func(r chi.Router) {
+				r.Use(app.AuthTokenMiddleware)
+				r.Use(app.requireRole("manager", "admin")) // only execs can access
+				r.Post("/", app.registerTeacherHandler)
+				r.Get("/", app.getTeachersHandler)
 
-				r.Get("/", app.getTeacherHandler)
-				r.Get("/students", app.getStudentsByTeacherHandler)
-				r.Patch("/", app.updateTeacherHandler)
-				r.Delete("/", app.deleteTeacherHandler)
+				r.Route("/{teacherID}", func(r chi.Router) {
+					r.Use(app.teachersContextMiddleware)
+					r.Get("/", app.getTeacherHandler)
+					r.Get("/students", app.getStudentsByTeacherHandler)
+					r.Patch("/", app.updateTeacherHandler)
+					r.Delete("/", app.deleteTeacherHandler)
+				})
 			})
 		})
 
 		r.Route("/students", func(r chi.Router) {
-			r.Post("/", app.createStudentHandler)
-			r.Get("/", app.getStudentsHandler)
+			// PUBLIC LOGIN
+			r.Post("/login", app.loginStudentHandler)
 
-			r.Route("/{studentID}", func(r chi.Router) {
-				r.Use(app.studentsContextMiddleware)
+			// PROTECTED: Only execs can manage students
+			r.Group(func(r chi.Router) {
+				r.Use(app.AuthTokenMiddleware)
+				r.Use(app.requireRole("admin", "manager")) // only execs can access
+				r.Post("/", app.registerStudentHandler)
+				r.Get("/", app.getStudentsHandler)
 
-				r.Get("/", app.getStudentHandler)
-				r.Patch("/", app.updateStudentHandler)
-				r.Delete("/", app.deleteStudentHandler)
+				r.Route("/{studentID}", func(r chi.Router) {
+					r.Use(app.studentsContextMiddleware)
+					r.Get("/", app.getStudentHandler)
+					r.Patch("/", app.updateStudentHandler)
+					r.Delete("/", app.deleteStudentHandler)
+				})
 			})
 		})
+
 	})
 
 	return r

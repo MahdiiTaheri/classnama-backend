@@ -12,7 +12,7 @@ type Teacher struct {
 	FirstName   string    `json:"first_name"`
 	LastName    string    `json:"last_name"`
 	Email       string    `json:"email"`
-	Password    string    `json:"-"`
+	Password    password  `json:"-"`
 	Subject     string    `json:"subject"`
 	PhoneNumber string    `json:"phone_number"`
 	HireDate    time.Time `json:"hire_date"`
@@ -39,7 +39,7 @@ func (s *TeacherStore) Create(ctx context.Context, teacher *Teacher) error {
 		teacher.FirstName,
 		teacher.LastName,
 		teacher.Email,
-		teacher.Password,
+		teacher.Password.hash,
 		teacher.Subject,
 		teacher.PhoneNumber,
 		teacher.HireDate,
@@ -109,6 +109,39 @@ func (s *TeacherStore) GetByID(ctx context.Context, id int64) (*Teacher, error) 
 
 	var t Teacher
 	err := s.db.QueryRowContext(ctx, query, id).Scan(
+		&t.ID,
+		&t.FirstName,
+		&t.LastName,
+		&t.Email,
+		&t.Subject,
+		&t.PhoneNumber,
+		&t.HireDate,
+		&t.CreatedAt,
+		&t.UpdatedAt,
+	)
+
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, ErrNotFound
+		}
+		return nil, err
+	}
+
+	return &t, nil
+}
+
+func (s *TeacherStore) GetByEmail(ctx context.Context, email string) (*Teacher, error) {
+	query := `
+		SELECT id, first_name, last_name, email, subject, phone_number, hire_date, created_at, updated_at
+		FROM teachers
+		WHERE email = $1
+	`
+
+	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
+	defer cancel()
+
+	var t Teacher
+	err := s.db.QueryRowContext(ctx, query, email).Scan(
 		&t.ID,
 		&t.FirstName,
 		&t.LastName,

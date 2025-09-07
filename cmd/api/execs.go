@@ -16,13 +16,6 @@ type execKey string
 
 const execCtx execKey = "exec"
 
-type CreateExecPayload struct {
-	FirstName string     `json:"first_name" validate:"required,max=72"`
-	LastName  string     `json:"last_name" validate:"required,max=72"`
-	Email     string     `json:"email" validate:"required,email"`
-	Role      store.Role `json:"role" validate:"required,oneof=admin manager"`
-}
-
 type UpdateExecPayload struct {
 	FirstName *string     `json:"first_name,omitempty" validate:"omitempty,max=72"`
 	LastName  *string     `json:"last_name,omitempty" validate:"omitempty,max=72"`
@@ -38,7 +31,7 @@ type UpdateExecPayload struct {
 //	@Accept			json
 //	@Produce		json
 //	@Param			payload	body		CreateExecPayload	true	"Exec payload"
-//	@Success		201		{object}	store.Exec			"Returns the created exec object"
+//	@Success		201		{object}	ExecWithToken			"Returns the created exec object"
 //	@Failure		400		{object}	error				"Bad request, validation failed"
 //	@Failure		401		{object}	error				"Unauthorized"
 //	@Failure		403		{object}	error				"Forbidden"
@@ -48,39 +41,70 @@ type UpdateExecPayload struct {
 //	@Security		ApiKeyAuth
 //	@Router			/execs [post]
 //	@ID				createExec
-func (app *application) createExecHandler(w http.ResponseWriter, r *http.Request) {
-	var payload CreateExecPayload
-	if err := readJSON(w, r, &payload); err != nil {
-		writeJSONError(w, http.StatusBadRequest, err.Error())
-		return
-	}
 
-	if err := Validate.Struct(payload); err != nil {
-		app.badRequestResponse(w, r, err)
-		return
-	}
+// response wrapper sent back after creation
 
-	exec := &store.Exec{
-		FirstName: payload.FirstName,
-		LastName:  payload.LastName,
-		Role:      payload.Role,
-		Email:     payload.Email,
-	}
-	ctx := r.Context()
+// func (app *application) createExecHandler(w http.ResponseWriter, r *http.Request) {
+// 	var payload CreateExecPayload
+// 	if err := readJSON(w, r, &payload); err != nil {
+// 		// keep consistent with your other handlers
+// 		app.badRequestResponse(w, r, err)
+// 		return
+// 	}
 
-	if err := app.store.Execs.Create(ctx, exec); err != nil {
-		app.badRequestResponse(w, r, err)
-		return
-	}
+// 	if err := Validate.Struct(payload); err != nil {
+// 		app.badRequestResponse(w, r, err)
+// 		return
+// 	}
 
-	if err := app.jsonResponse(w, http.StatusCreated, exec); err != nil {
-		switch err {
-		default:
-			app.internalServerErrorResponse(w, r, err)
-			return
-		}
-	}
-}
+// 	exec := &store.Exec{
+// 		FirstName: payload.FirstName,
+// 		LastName:  payload.LastName,
+// 		Role:      payload.Role,
+// 		Email:     payload.Email,
+// 	}
+
+// 	// hash password
+// 	if err := exec.Password.Set(payload.Password); err != nil {
+// 		app.internalServerErrorResponse(w, r, err)
+// 		return
+// 	}
+
+// 	ctx := r.Context()
+
+// 	// persist exec (must set exec.ID)
+// 	if err := app.store.Execs.Create(ctx, exec); err != nil {
+// 		app.badRequestResponse(w, r, err)
+// 		return
+// 	}
+
+// 	// --- issue JWT (inline) ---
+// 	claims := jwt.MapClaims{
+// 		"sub":  exec.ID,
+// 		"role": exec.Role, // execs only
+// 		"exp":  time.Now().Add(app.config.auth.token.exp).Unix(),
+// 		"iat":  time.Now().Unix(),
+// 		"nbf":  time.Now().Unix(),
+// 		"iss":  app.config.auth.token.iss,
+// 		"aud":  app.config.auth.token.iss,
+// 	}
+
+// 	token, err := app.authenticator.GenerateToken(claims)
+// 	if err != nil {
+// 		app.internalServerErrorResponse(w, r, err)
+// 		return
+// 	}
+
+// 	resp := ExecWithToken{
+// 		Exec:  exec,
+// 		Token: token,
+// 	}
+
+// 	if err := app.jsonResponse(w, http.StatusCreated, resp); err != nil {
+// 		app.internalServerErrorResponse(w, r, err)
+// 		return
+// 	}
+// }
 
 // GetExecs godoc
 //

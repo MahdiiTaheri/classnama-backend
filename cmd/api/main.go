@@ -3,7 +3,9 @@ package main
 import (
 	"expvar"
 	"runtime"
+	"time"
 
+	"github.com/MahdiiTaheri/classnama-backend/internal/auth"
 	"github.com/MahdiiTaheri/classnama-backend/internal/db"
 	"github.com/MahdiiTaheri/classnama-backend/internal/env"
 	"github.com/MahdiiTaheri/classnama-backend/internal/store"
@@ -41,6 +43,16 @@ func main() {
 			maxIdleConns: env.GetInt("DB_MAX_IDLE_CONNS", 30),
 			maxIdleTime:  env.GetString("DB_MAX_IDLE_TIME", "15m"),
 		},
+		auth: authConfig{
+			basic: basicConfig{
+				user: env.GetString("AUTH_BASIC", "admin"),
+				pass: env.GetString("AUTH_BASIC_PASS", "admin"),
+			}, token: tokenConfig{
+				secret: env.GetString("AUTH_TOKEN_SECRET", "example"),
+				exp:    time.Hour * 24 * 7,
+				iss:    "classnama",
+			},
+		},
 	}
 
 	// Logger
@@ -58,10 +70,13 @@ func main() {
 
 	store := store.NewStorage(db)
 
+	jwtAuthenticator := auth.NewJWTAuthenticator(cfg.auth.token.secret, cfg.auth.token.iss, cfg.auth.token.iss)
+
 	app := &application{
-		config: cfg,
-		logger: logger,
-		store:  store,
+		config:        cfg,
+		logger:        logger,
+		store:         store,
+		authenticator: jwtAuthenticator,
 	}
 
 	// Publish some expvar metrics

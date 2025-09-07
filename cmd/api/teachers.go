@@ -49,40 +49,40 @@ type UpdateTeacherPayload struct {
 //	@Security		ApiKeyAuth
 //	@Router			/teachers [post]
 //	@ID				createTeacher
-func (app *application) createTeacherHandler(w http.ResponseWriter, r *http.Request) {
-	var payload CreateTeacherPayload
-	if err := readJSON(w, r, &payload); err != nil {
-		writeJSONError(w, http.StatusBadRequest, err.Error())
-		return
-	}
+// func (app *application) createTeacherHandler(w http.ResponseWriter, r *http.Request) {
+// 	var payload CreateTeacherPayload
+// 	if err := readJSON(w, r, &payload); err != nil {
+// 		writeJSONError(w, http.StatusBadRequest, err.Error())
+// 		return
+// 	}
 
-	if err := Validate.Struct(payload); err != nil {
-		app.badRequestResponse(w, r, err)
-		return
-	}
+// 	if err := Validate.Struct(payload); err != nil {
+// 		app.badRequestResponse(w, r, err)
+// 		return
+// 	}
 
-	teacher := &store.Teacher{
-		FirstName:   payload.FirstName,
-		LastName:    payload.LastName,
-		Email:       payload.Email,
-		Subject:     payload.Subject,
-		PhoneNumber: payload.PhoneNumber,
-	}
-	ctx := r.Context()
+// 	teacher := &store.Teacher{
+// 		FirstName:   payload.FirstName,
+// 		LastName:    payload.LastName,
+// 		Email:       payload.Email,
+// 		Subject:     payload.Subject,
+// 		PhoneNumber: payload.PhoneNumber,
+// 	}
+// 	ctx := r.Context()
 
-	if err := app.store.Teachers.Create(ctx, teacher); err != nil {
-		app.badRequestResponse(w, r, err)
-		return
-	}
+// 	if err := app.store.Teachers.Create(ctx, teacher); err != nil {
+// 		app.badRequestResponse(w, r, err)
+// 		return
+// 	}
 
-	if err := app.jsonResponse(w, http.StatusCreated, teacher); err != nil {
-		switch err {
-		default:
-			app.internalServerErrorResponse(w, r, err)
-			return
-		}
-	}
-}
+// 	if err := app.jsonResponse(w, http.StatusCreated, teacher); err != nil {
+// 		switch err {
+// 		default:
+// 			app.internalServerErrorResponse(w, r, err)
+// 			return
+// 		}
+// 	}
+// }
 
 // GetTeachers godoc
 //

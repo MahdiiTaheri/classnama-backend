@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/MahdiiTaheri/classnama-backend/internal/store"
 	"github.com/MahdiiTaheri/classnama-backend/internal/utils"
@@ -58,52 +57,52 @@ type UpdateStudentPayload struct {
 //	@Security		ApiKeyAuth
 //	@Router			/students [post]
 //	@ID				createstudent
-func (app *application) createStudentHandler(w http.ResponseWriter, r *http.Request) {
-	var payload CreateStudentPayload
-	if err := readJSON(w, r, &payload); err != nil {
-		writeJSONError(w, http.StatusBadRequest, err.Error())
-		return
-	}
+// func (app *application) createStudentHandler(w http.ResponseWriter, r *http.Request) {
+// 	var payload CreateStudentPayload
+// 	if err := readJSON(w, r, &payload); err != nil {
+// 		writeJSONError(w, http.StatusBadRequest, err.Error())
+// 		return
+// 	}
 
-	if err := Validate.Struct(payload); err != nil {
-		app.badRequestResponse(w, r, err)
-		return
-	}
+// 	if err := Validate.Struct(payload); err != nil {
+// 		app.badRequestResponse(w, r, err)
+// 		return
+// 	}
 
-	birthDate, err := time.Parse("2006-01-02", payload.BirthDate)
-	if err != nil {
-		app.badRequestResponse(w, r, fmt.Errorf("invalid birth_date format: %w", err))
-		return
-	}
+// 	birthDate, err := time.Parse("2006-01-02", payload.BirthDate)
+// 	if err != nil {
+// 		app.badRequestResponse(w, r, fmt.Errorf("invalid birth_date format: %w", err))
+// 		return
+// 	}
 
-	student := &store.Student{
-		FirstName:         payload.FirstName,
-		LastName:          payload.LastName,
-		Email:             payload.Email,
-		PhoneNumber:       &payload.PhoneNumber,
-		Class:             payload.Class,
-		BirthDate:         birthDate,
-		Address:           payload.Address,
-		ParentName:        payload.ParentName,
-		ParentPhoneNumber: payload.ParentPhoneNumber,
-		TeacherID:         payload.TeacherID,
-	}
+// 	student := &store.Student{
+// 		FirstName:         payload.FirstName,
+// 		LastName:          payload.LastName,
+// 		Email:             payload.Email,
+// 		PhoneNumber:       &payload.PhoneNumber,
+// 		Class:             payload.Class,
+// 		BirthDate:         birthDate,
+// 		Address:           payload.Address,
+// 		ParentName:        payload.ParentName,
+// 		ParentPhoneNumber: payload.ParentPhoneNumber,
+// 		TeacherID:         payload.TeacherID,
+// 	}
 
-	ctx := r.Context()
+// 	ctx := r.Context()
 
-	if err := app.store.Students.Create(ctx, student); err != nil {
-		app.badRequestResponse(w, r, err)
-		return
-	}
+// 	if err := app.store.Students.Create(ctx, student); err != nil {
+// 		app.badRequestResponse(w, r, err)
+// 		return
+// 	}
 
-	if err := app.jsonResponse(w, http.StatusCreated, student); err != nil {
-		switch err {
-		default:
-			app.internalServerErrorResponse(w, r, err)
-			return
-		}
-	}
-}
+// 	if err := app.jsonResponse(w, http.StatusCreated, student); err != nil {
+// 		switch err {
+// 		default:
+// 			app.internalServerErrorResponse(w, r, err)
+// 			return
+// 		}
+// 	}
+// }
 
 // GetStudents godoc
 //
