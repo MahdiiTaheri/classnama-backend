@@ -59,31 +59,15 @@ func (s *ExecStore) Create(ctx context.Context, exec *Exec) error {
 }
 
 func (s *ExecStore) GetAll(ctx context.Context, pq PaginatedQuery) ([]*Exec, error) {
-	query := `
-		SELECT id, first_name, last_name, email, role, created_at, updated_at
-		FROM execs
-	`
+	columns := []string{"id", "first_name", "last_name", "email", "role", "created_at", "updated_at"}
+	searchCols := []string{"first_name", "last_name", "email"}
 
-	// Sorting
-	if pq.SortBy != "" {
-		// ⚠️ Only allow known safe column names to avoid SQL injection
-		switch pq.SortBy {
-		case "id", "first_name", "last_name", "email", "role", "created_at", "updated_at":
-			query += " ORDER BY " + pq.SortBy + " " + pq.Order
-		default:
-			query += " ORDER BY id ASC"
-		}
-	} else {
-		query += " ORDER BY id ASC"
-	}
-
-	// Pagination
-	query += " LIMIT $1 OFFSET $2"
+	query, args := BuildPaginatedQuery("execs", columns, pq, searchCols)
 
 	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
 	defer cancel()
 
-	rows, err := s.db.QueryContext(ctx, query, pq.Limit, pq.Offset)
+	rows, err := s.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -106,11 +90,7 @@ func (s *ExecStore) GetAll(ctx context.Context, pq PaginatedQuery) ([]*Exec, err
 		execs = append(execs, &e)
 	}
 
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-
-	return execs, nil
+	return execs, rows.Err()
 }
 
 func (s *ExecStore) GetByID(ctx context.Context, id int64) (*Exec, error) {
