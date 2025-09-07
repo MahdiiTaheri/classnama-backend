@@ -51,6 +51,11 @@ func (app *application) getTeachersHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
+	if err := Validate.Struct(pq); err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+
 	teachers, err := app.store.Teachers.GetAll(ctx, pq)
 	if err != nil {
 		app.internalServerErrorResponse(w, r, err)

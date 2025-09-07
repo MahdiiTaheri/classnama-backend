@@ -9,11 +9,11 @@ import (
 
 // PaginatedQuery holds pagination and sorting params.
 type PaginatedQuery struct {
-	Limit  int    `json:"limit" validate:"gte=1,lte=100"`
-	Offset int    `json:"offset" validate:"gte=0"`
+	Limit  int    `json:"limit" validate:"gte=1,lte=50,omitempty"`
+	Offset int    `json:"offset" validate:"gte=0,omitempty"`
 	SortBy string `json:"sort_by" validate:"omitempty"`
-	Order  string `json:"order" validate:"oneof=asc desc"`
-	Search string `json:"search" validate:"max=100"`
+	Order  string `json:"order" validate:"oneof=asc desc,omitempty"`
+	Search string `json:"search" validate:"max=72,omitempty"`
 }
 
 // Parse extracts pagination + sorting from query params.

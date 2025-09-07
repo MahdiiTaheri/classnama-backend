@@ -11,11 +11,13 @@ import (
 )
 
 // Sample data for seeding
-var firstNames = []string{"John", "Alice", "Bob", "Emma", "Liam", "Sophia", "David", "Olivia"}
-var lastNames = []string{"Doe", "Smith", "Johnson", "Brown", "Williams", "Jones", "Garcia"}
-var subjects = []string{"Math", "Physics", "Chemistry", "Biology", "History", "English"}
-var classes = []string{"1A", "1B", "2A", "2B", "3A", "3B"}
-var roles = []string{"admin", "manager"}
+var (
+	firstNames = []string{"John", "Alice", "Bob", "Emma", "Liam", "Sophia", "David", "Olivia"}
+	lastNames  = []string{"Doe", "Smith", "Johnson", "Brown", "Williams", "Jones", "Garcia"}
+	subjects   = []string{"Math", "Physics", "Chemistry", "Biology", "History", "English"}
+	classes    = []string{"1A", "1B", "2A", "2B", "3A", "3B"}
+	roles      = []string{"admin", "manager"}
+)
 
 // Seed populates the database
 func Seed(store store.Storage) {
@@ -105,6 +107,7 @@ func generateStudents(n int, teachers []*store.Teacher, rng *rand.Rand) []*store
 			Address:           fmt.Sprintf("Street %d", i),
 			ParentName:        firstNames[rng.Intn(len(firstNames))] + " " + lastNames[rng.Intn(len(lastNames))],
 			ParentPhoneNumber: fmt.Sprintf("+98765432%02d", i),
+			PhoneNumber:       func() *string { s := fmt.Sprintf("+98765432%02d", i); return &s }(),
 			TeacherID:         teacher.ID,
 		}
 	}

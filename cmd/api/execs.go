@@ -51,6 +51,11 @@ func (app *application) getExecsHandler(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
+	if err := Validate.Struct(pq); err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+
 	execs, err := app.store.Execs.GetAll(ctx, pq)
 	if err != nil {
 		app.internalServerErrorResponse(w, r, err)
