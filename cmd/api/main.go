@@ -10,6 +10,8 @@ import (
 	"github.com/MahdiiTaheri/classnama-backend/internal/env"
 	"github.com/MahdiiTaheri/classnama-backend/internal/ratelimiter"
 	"github.com/MahdiiTaheri/classnama-backend/internal/store"
+	"github.com/MahdiiTaheri/classnama-backend/internal/store/cache"
+	"github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
 )
 
@@ -58,6 +60,12 @@ func main() {
 			TimeFrame:            time.Second * 5,
 			Enabled:              env.GetBool("RATE_LIMITER_ENABLED", true),
 		},
+		redisCfg: redisCfg{
+			addr:    env.GetString("REDIS_ADDR", "localhost:6379"),
+			pw:      env.GetString("REDIS_PW", ""),
+			db:      env.GetInt("REDIS_DB", 0),
+			enabled: env.GetBool("REDIS_ENABLED", true),
+		},
 	}
 
 	// Logger
@@ -75,6 +83,14 @@ func main() {
 
 	store := store.NewStorage(db)
 
+	// Cache
+	var rdb *redis.Client
+	if cfg.redisCfg.enabled {
+		rdb = cache.NewRedisClient(cfg.redisCfg.addr, cfg.redisCfg.pw, cfg.redisCfg.db)
+		logger.Info("Redis connection established")
+	}
+	cacheStorage := cache.NewRedisStorage(rdb)
+
 	jwtAuthenticator := auth.NewJWTAuthenticator(cfg.auth.token.secret, cfg.auth.token.iss, cfg.auth.token.iss)
 	limiter := ratelimiter.NewTokenBucketLimiter(
 		cfg.ratelimiter.RequestsPerTimeFrame,
@@ -88,6 +104,7 @@ func main() {
 		store:         store,
 		authenticator: jwtAuthenticator,
 		ratelimiter:   limiter,
+		cacheStorage:  cacheStorage,
 	}
 
 	// Publish some expvar metrics

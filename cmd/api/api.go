@@ -14,6 +14,7 @@ import (
 	"github.com/MahdiiTaheri/classnama-backend/internal/auth"
 	"github.com/MahdiiTaheri/classnama-backend/internal/ratelimiter"
 	"github.com/MahdiiTaheri/classnama-backend/internal/store"
+	"github.com/MahdiiTaheri/classnama-backend/internal/store/cache"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	httpSwagger "github.com/swaggo/http-swagger/v2"
@@ -24,6 +25,7 @@ type application struct {
 	config        config
 	logger        *zap.SugaredLogger
 	store         store.Storage
+	cacheStorage  cache.Storage
 	authenticator auth.Authenticator
 	ratelimiter   ratelimiter.Limiter
 }
@@ -34,7 +36,15 @@ type config struct {
 	apiURL      string
 	db          dbConfig
 	auth        authConfig
+	redisCfg    redisCfg
 	ratelimiter ratelimiter.Config
+}
+
+type redisCfg struct {
+	addr    string
+	pw      string
+	db      int
+	enabled bool
 }
 
 type dbConfig struct {

@@ -8,6 +8,7 @@ import (
 	"strconv"
 
 	"github.com/MahdiiTaheri/classnama-backend/internal/store"
+	"github.com/MahdiiTaheri/classnama-backend/internal/store/cache"
 	"github.com/MahdiiTaheri/classnama-backend/internal/utils"
 	"github.com/go-chi/chi/v5"
 )
@@ -38,25 +39,33 @@ type UpdateExecPayload struct {
 func (app *application) getExecsHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	pq := store.PaginatedQuery{
-		Limit:  10,
-		Offset: 0,
-		SortBy: "id",
-		Order:  "asc",
-	}
-
+	pq := store.PaginatedQuery{Limit: 10, Offset: 0, SortBy: "id", Order: "asc"}
 	pq, err := pq.Parse(r)
 	if err != nil {
 		app.badRequestResponse(w, r, err)
 		return
 	}
-
 	if err := Validate.Struct(pq); err != nil {
 		app.badRequestResponse(w, r, err)
 		return
 	}
 
-	execs, err := app.store.Execs.GetAll(ctx, pq)
+	params := map[string]any{
+		"limit":  pq.Limit,
+		"offset": pq.Offset,
+		"sort":   pq.SortBy,
+		"order":  pq.Order,
+	}
+
+	execs, err := cache.GetListWithCache(
+		ctx,
+		app.cacheStorage.Execs,
+		"execs:list",
+		params,
+		func(ctx context.Context) ([]*store.Exec, error) {
+			return app.store.Execs.GetAll(ctx, pq)
+		},
+	)
 	if err != nil {
 		app.internalServerErrorResponse(w, r, err)
 		return
@@ -64,7 +73,6 @@ func (app *application) getExecsHandler(w http.ResponseWriter, r *http.Request) 
 
 	if err := app.jsonResponse(w, http.StatusOK, execs); err != nil {
 		app.internalServerErrorResponse(w, r, err)
-		return
 	}
 }
 

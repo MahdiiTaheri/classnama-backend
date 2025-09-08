@@ -8,6 +8,7 @@ import (
 	"strconv"
 
 	"github.com/MahdiiTaheri/classnama-backend/internal/store"
+	"github.com/MahdiiTaheri/classnama-backend/internal/store/cache"
 	"github.com/MahdiiTaheri/classnama-backend/internal/utils"
 	"github.com/go-chi/chi/v5"
 )
@@ -56,7 +57,23 @@ func (app *application) getTeachersHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	teachers, err := app.store.Teachers.GetAll(ctx, pq)
+	params := map[string]any{
+		"limit":  pq.Limit,
+		"offset": pq.Offset,
+		"sort":   pq.SortBy,
+		"order":  pq.Order,
+	}
+
+	teachers, err := cache.GetListWithCache(
+		ctx,
+		app.cacheStorage.Execs,
+		"teachers:list",
+		params,
+		func(ctx context.Context) ([]*store.Exec, error) {
+			return app.store.Execs.GetAll(ctx, pq)
+		},
+	)
+
 	if err != nil {
 		app.internalServerErrorResponse(w, r, err)
 		return
@@ -90,6 +107,61 @@ func (app *application) getTeacherHandler(w http.ResponseWriter, r *http.Request
 	if err := app.jsonResponse(w, http.StatusOK, teacher); err != nil {
 		app.internalServerErrorResponse(w, r, err)
 		return
+	}
+}
+
+// GetStudentsByTeacherID godoc
+//
+//	@Summary		Get students of a teacher
+//	@Description	Returns a list of all students assigned to a specific teacher
+//	@Tags			Students
+//	@Accept			json
+//	@Produce		json
+//	@Param			teacherID	path		int				true	"Teacher ID"
+//	@Success		200			{array}		store.Student	"List of students"
+//	@Failure		400			{object}	error			"Bad request"
+//	@Failure		404			{object}	error			"Teacher not found / no students"
+//	@Failure		500			{object}	error			"Internal server error"
+//	@Security		ApiKeyAuth
+//	@Router			/teachers/{teacherID}/students [get]
+//	@ID				getStudentsByTeacher
+func (app *application) getStudentsByTeacherHandler(w http.ResponseWriter, r *http.Request) {
+	teacherIDParam := chi.URLParam(r, "teacherID")
+	teacherID, err := strconv.ParseInt(teacherIDParam, 10, 64)
+	if err != nil {
+		app.badRequestResponse(w, r, fmt.Errorf("invalid teacher ID"))
+		return
+	}
+
+	ctx := r.Context()
+
+	var students []*store.Student
+	if app.config.redisCfg.enabled {
+		students, err = app.cacheStorage.Students.GetByTeacher(ctx, teacherID)
+		if err != nil {
+			app.logger.Warnf("Redis get by teacher failed: %v", err)
+		}
+	}
+
+	if students == nil {
+		students, err = app.store.Students.GetByTeacherID(ctx, teacherID)
+		if err != nil {
+			app.internalServerErrorResponse(w, r, err)
+			return
+		}
+
+		if app.config.redisCfg.enabled {
+			_ = app.cacheStorage.Students.SetByTeacher(ctx, teacherID, students)
+		}
+	}
+
+	if len(students) == 0 {
+		app.notfoundResponse(w, r, fmt.Errorf("no students found for teacher %d", teacherID))
+		return
+	}
+
+	if err := app.jsonResponse(w, http.StatusOK, students); err != nil {
+		app.internalServerErrorResponse(w, r, err)
 	}
 }
 

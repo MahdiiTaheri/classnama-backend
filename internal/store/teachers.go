@@ -191,7 +191,7 @@ func (s *StudentStore) GetByTeacherID(ctx context.Context, teacherID int64) ([]*
 			&s.FirstName,
 			&s.LastName,
 			&s.Email,
-			&s.Password,
+			&s.Password.hash,
 			&s.PhoneNumber,
 			&s.Class,
 			&s.BirthDate,
