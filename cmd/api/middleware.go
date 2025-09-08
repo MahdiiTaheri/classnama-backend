@@ -164,3 +164,16 @@ func (app *application) requireRole(roles ...string) func(http.Handler) http.Han
 		})
 	}
 }
+
+func (app *application) RateLimiterMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if app.config.ratelimiter.Enabled {
+			if allow, retryAfter := app.ratelimiter.Allow(r.RemoteAddr); !allow {
+				app.rateLimitExceededResponse(w, r, retryAfter.String())
+				return
+			}
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}

@@ -8,6 +8,7 @@ import (
 	"github.com/MahdiiTaheri/classnama-backend/internal/auth"
 	"github.com/MahdiiTaheri/classnama-backend/internal/db"
 	"github.com/MahdiiTaheri/classnama-backend/internal/env"
+	"github.com/MahdiiTaheri/classnama-backend/internal/ratelimiter"
 	"github.com/MahdiiTaheri/classnama-backend/internal/store"
 	"go.uber.org/zap"
 )
@@ -32,7 +33,6 @@ const version = "0.1.0"
 // @name						Authorization
 // @description
 func main() {
-	// Load config
 	cfg := config{
 		addr:   env.GetString("ADDR", ":8080"),
 		env:    env.GetString("ENV", "development"),
@@ -53,6 +53,11 @@ func main() {
 				iss:    "classnama",
 			},
 		},
+		ratelimiter: ratelimiter.Config{
+			RequestsPerTimeFrame: env.GetInt("RATE_LIMITER_REQUESTS_COUNT", 10),
+			TimeFrame:            time.Second * 5,
+			Enabled:              env.GetBool("RATE_LIMITER_ENABLED", true),
+		},
 	}
 
 	// Logger
@@ -71,12 +76,18 @@ func main() {
 	store := store.NewStorage(db)
 
 	jwtAuthenticator := auth.NewJWTAuthenticator(cfg.auth.token.secret, cfg.auth.token.iss, cfg.auth.token.iss)
+	limiter := ratelimiter.NewTokenBucketLimiter(
+		cfg.ratelimiter.RequestsPerTimeFrame,
+		cfg.ratelimiter.TimeFrame,
+	)
+	limiter.StartCleanup()
 
 	app := &application{
 		config:        cfg,
 		logger:        logger,
 		store:         store,
 		authenticator: jwtAuthenticator,
+		ratelimiter:   limiter,
 	}
 
 	// Publish some expvar metrics

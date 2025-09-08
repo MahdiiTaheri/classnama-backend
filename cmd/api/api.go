@@ -12,6 +12,7 @@ import (
 
 	"github.com/MahdiiTaheri/classnama-backend/docs"
 	"github.com/MahdiiTaheri/classnama-backend/internal/auth"
+	"github.com/MahdiiTaheri/classnama-backend/internal/ratelimiter"
 	"github.com/MahdiiTaheri/classnama-backend/internal/store"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -24,14 +25,16 @@ type application struct {
 	logger        *zap.SugaredLogger
 	store         store.Storage
 	authenticator auth.Authenticator
+	ratelimiter   ratelimiter.Limiter
 }
 
 type config struct {
-	addr   string
-	env    string
-	apiURL string
-	db     dbConfig
-	auth   authConfig
+	addr        string
+	env         string
+	apiURL      string
+	db          dbConfig
+	auth        authConfig
+	ratelimiter ratelimiter.Config
 }
 
 type dbConfig struct {
@@ -66,6 +69,7 @@ func (app *application) mount() http.Handler {
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.Timeout(60 * time.Second))
+	r.Use(app.RateLimiterMiddleware)
 
 	r.Route("/v1", func(r chi.Router) {
 		r.Get("/health", app.healthCheckHandler)
