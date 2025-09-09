@@ -24,6 +24,210 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/attendance": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Attendance"
+                ],
+                "summary": "Mark a single attendance record (create or update)",
+                "operationId": "markAttendance",
+                "parameters": [
+                    {
+                        "description": "Attendance payload",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/main.markAttendancePayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/store.AttendanceRecord"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {}
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {}
+                    }
+                }
+            }
+        },
+        "/attendance/bulk": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Attendance"
+                ],
+                "summary": "Bulk mark attendance for a classroom",
+                "operationId": "bulkMarkAttendance",
+                "parameters": [
+                    {
+                        "description": "Bulk attendance payload",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/main.bulkAttendancePayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {}
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {}
+                    }
+                }
+            }
+        },
+        "/attendance/classrooms/{classroomID}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Attendance"
+                ],
+                "summary": "Get attendance for a classroom on a date",
+                "operationId": "getAttendanceByClassroomDate",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Classroom ID",
+                        "name": "classroomID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Date YYYY-MM-DD",
+                        "name": "date",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/store.AttendanceRecord"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {}
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {}
+                    }
+                }
+            }
+        },
+        "/attendance/students/{studentID}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Attendance"
+                ],
+                "summary": "Get attendance records for a student",
+                "operationId": "getAttendanceByStudent",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Student ID",
+                        "name": "studentID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "From date YYYY-MM-DD",
+                        "name": "from",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "To date YYYY-MM-DD",
+                        "name": "to",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/store.AttendanceRecord"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {}
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {}
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {}
+                    }
+                }
+            }
+        },
         "/execs": {
             "get": {
                 "security": [
@@ -1174,6 +1378,115 @@ const docTemplate = `{
                 "subject": {
                     "type": "string",
                     "maxLength": 128
+                }
+            }
+        },
+        "main.bulkAttendanceItem": {
+            "type": "object",
+            "required": [
+                "status",
+                "student_id"
+            ],
+            "properties": {
+                "status": {
+                    "type": "string",
+                    "enum": [
+                        "present",
+                        "absent",
+                        "late",
+                        "excused"
+                    ]
+                },
+                "student_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "main.bulkAttendancePayload": {
+            "type": "object",
+            "required": [
+                "classroom_id",
+                "date",
+                "statuses"
+            ],
+            "properties": {
+                "classroom_id": {
+                    "type": "integer"
+                },
+                "date": {
+                    "type": "string"
+                },
+                "statuses": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/main.bulkAttendanceItem"
+                    }
+                }
+            }
+        },
+        "main.markAttendancePayload": {
+            "type": "object",
+            "required": [
+                "date",
+                "status",
+                "student_id"
+            ],
+            "properties": {
+                "classroom_id": {
+                    "type": "integer"
+                },
+                "date": {
+                    "description": "YYYY-MM-DD",
+                    "type": "string"
+                },
+                "note": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string",
+                    "enum": [
+                        "present",
+                        "absent",
+                        "late",
+                        "excused"
+                    ]
+                },
+                "student_id": {
+                    "type": "integer"
+                },
+                "teacher_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "store.AttendanceRecord": {
+            "type": "object",
+            "properties": {
+                "classroom_id": {
+                    "type": "integer"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "date": {
+                    "description": "date part only",
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "note": {
+                    "type": "string"
+                },
+                "status": {
+                    "description": "'present','absent','late','excused'",
+                    "type": "string"
+                },
+                "student_id": {
+                    "type": "integer"
+                },
+                "teacher_id": {
+                    "type": "integer"
                 }
             }
         },

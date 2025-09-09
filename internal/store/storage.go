@@ -65,6 +65,13 @@ type Storage struct {
 		Update(context.Context, *Classroom) error
 		Delete(context.Context, int64) error
 	}
+	Attendance interface {
+		Mark(context.Context, *AttendanceRecord) error
+		BulkMark(context.Context, int64, time.Time, map[int64]string) error
+		GetByStudent(context.Context, int64, *time.Time, *time.Time) ([]*AttendanceRecord, error)
+		GetByClassroomDate(context.Context, int64, time.Time) ([]*AttendanceRecord, error)
+		Delete(context.Context, int64) error
+	}
 }
 
 func NewStorage(db *sql.DB) Storage {
@@ -73,5 +80,6 @@ func NewStorage(db *sql.DB) Storage {
 		Teachers:   &TeacherStore{db},
 		Students:   &StudentStore{db},
 		Classrooms: &classroomStore{db},
+		Attendance: &AttendanceStore{db},
 	}
 }

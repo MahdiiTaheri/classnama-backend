@@ -171,6 +171,82 @@ definitions:
         maxLength: 128
         type: string
     type: object
+  main.bulkAttendanceItem:
+    properties:
+      status:
+        enum:
+        - present
+        - absent
+        - late
+        - excused
+        type: string
+      student_id:
+        type: integer
+    required:
+    - status
+    - student_id
+    type: object
+  main.bulkAttendancePayload:
+    properties:
+      classroom_id:
+        type: integer
+      date:
+        type: string
+      statuses:
+        items:
+          $ref: '#/definitions/main.bulkAttendanceItem'
+        type: array
+    required:
+    - classroom_id
+    - date
+    - statuses
+    type: object
+  main.markAttendancePayload:
+    properties:
+      classroom_id:
+        type: integer
+      date:
+        description: YYYY-MM-DD
+        type: string
+      note:
+        type: string
+      status:
+        enum:
+        - present
+        - absent
+        - late
+        - excused
+        type: string
+      student_id:
+        type: integer
+      teacher_id:
+        type: integer
+    required:
+    - date
+    - status
+    - student_id
+    type: object
+  store.AttendanceRecord:
+    properties:
+      classroom_id:
+        type: integer
+      created_at:
+        type: string
+      date:
+        description: date part only
+        type: string
+      id:
+        type: integer
+      note:
+        type: string
+      status:
+        description: '''present'',''absent'',''late'',''excused'''
+        type: string
+      student_id:
+        type: integer
+      teacher_id:
+        type: integer
+    type: object
   store.Exec:
     properties:
       created_at:
@@ -258,6 +334,138 @@ info:
   termsOfService: http://swagger.io/terms/
   title: ClassNama
 paths:
+  /attendance:
+    post:
+      consumes:
+      - application/json
+      operationId: markAttendance
+      parameters:
+      - description: Attendance payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/main.markAttendancePayload'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/store.AttendanceRecord'
+        "400":
+          description: Bad Request
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Mark a single attendance record (create or update)
+      tags:
+      - Attendance
+  /attendance/bulk:
+    post:
+      consumes:
+      - application/json
+      operationId: bulkMarkAttendance
+      parameters:
+      - description: Bulk attendance payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/main.bulkAttendancePayload'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Bulk mark attendance for a classroom
+      tags:
+      - Attendance
+  /attendance/classrooms/{classroomID}:
+    get:
+      operationId: getAttendanceByClassroomDate
+      parameters:
+      - description: Classroom ID
+        in: path
+        name: classroomID
+        required: true
+        type: integer
+      - description: Date YYYY-MM-DD
+        in: query
+        name: date
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/store.AttendanceRecord'
+            type: array
+        "400":
+          description: Bad Request
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Get attendance for a classroom on a date
+      tags:
+      - Attendance
+  /attendance/students/{studentID}:
+    get:
+      operationId: getAttendanceByStudent
+      parameters:
+      - description: Student ID
+        in: path
+        name: studentID
+        required: true
+        type: integer
+      - description: From date YYYY-MM-DD
+        in: query
+        name: from
+        type: string
+      - description: To date YYYY-MM-DD
+        in: query
+        name: to
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/store.AttendanceRecord'
+            type: array
+        "400":
+          description: Bad Request
+          schema: {}
+        "404":
+          description: Not Found
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Get attendance records for a student
+      tags:
+      - Attendance
   /execs:
     get:
       consumes:
