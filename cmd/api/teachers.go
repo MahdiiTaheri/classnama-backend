@@ -65,11 +65,11 @@ func (app *application) getTeachersHandler(w http.ResponseWriter, r *http.Reques
 
 	teachers, err := cache.GetListWithCache(
 		ctx,
-		app.cacheStorage.Execs,
+		app.cacheStorage.Teachers,
 		"teachers:list",
 		params,
-		func(ctx context.Context) ([]*store.Exec, error) {
-			return app.store.Execs.GetAll(ctx, pq)
+		func(ctx context.Context) ([]*store.Teacher, error) {
+			return app.store.Teachers.GetAll(ctx, pq)
 		},
 	)
 
