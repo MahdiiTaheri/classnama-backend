@@ -11,8 +11,8 @@ type Storage struct {
 	Students interface {
 		GetList(context.Context, string) ([]*store.Student, error)
 		SetList(context.Context, string, []*store.Student) error
-		GetByTeacher(context.Context, int64) ([]*store.Student, error)
-		SetByTeacher(context.Context, int64, []*store.Student) error
+		GetByTeacherID(context.Context, int64) ([]*store.Student, error)
+		SetByTeacherID(context.Context, int64, []*store.Student) error
 	}
 	Teachers interface {
 		GetList(context.Context, string) ([]*store.Teacher, error)

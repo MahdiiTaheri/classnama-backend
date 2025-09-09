@@ -136,7 +136,7 @@ func (app *application) getStudentsByTeacherHandler(w http.ResponseWriter, r *ht
 
 	var students []*store.Student
 	if app.config.redisCfg.enabled {
-		students, err = app.cacheStorage.Students.GetByTeacher(ctx, teacherID)
+		students, err = app.cacheStorage.Students.GetByTeacherID(ctx, teacherID)
 		if err != nil {
 			app.logger.Warnf("Redis get by teacher failed: %v", err)
 		}
@@ -150,7 +150,7 @@ func (app *application) getStudentsByTeacherHandler(w http.ResponseWriter, r *ht
 		}
 
 		if app.config.redisCfg.enabled {
-			_ = app.cacheStorage.Students.SetByTeacher(ctx, teacherID, students)
+			_ = app.cacheStorage.Students.SetByTeacherID(ctx, teacherID, students)
 		}
 	}
 

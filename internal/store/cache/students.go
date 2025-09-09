@@ -42,7 +42,7 @@ func (e *StudentStore) SetList(ctx context.Context, key string, students []*stor
 }
 
 // GetByTeacher caches students for a specific teacher
-func (s *StudentStore) GetByTeacher(ctx context.Context, teacherID int64) ([]*store.Student, error) {
+func (s *StudentStore) GetByTeacherID(ctx context.Context, teacherID int64) ([]*store.Student, error) {
 	key := fmt.Sprintf("students:teacher:%d", teacherID)
 	data, err := s.rdb.Get(ctx, key).Bytes()
 	if err == redis.Nil {
@@ -58,7 +58,7 @@ func (s *StudentStore) GetByTeacher(ctx context.Context, teacherID int64) ([]*st
 	return students, nil
 }
 
-func (s *StudentStore) SetByTeacher(ctx context.Context, teacherID int64, students []*store.Student) error {
+func (s *StudentStore) SetByTeacherID(ctx context.Context, teacherID int64, students []*store.Student) error {
 	key := fmt.Sprintf("students:teacher:%d", teacherID)
 	data, err := json.Marshal(students)
 	if err != nil {
