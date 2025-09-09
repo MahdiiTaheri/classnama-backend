@@ -1,0 +1,1 @@
+DROP INDEX IF EXISTS uniq_classrooms_grade_name;
