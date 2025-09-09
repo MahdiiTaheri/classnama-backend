@@ -12,11 +12,32 @@ import (
 
 // Sample data for seeding
 var (
-	firstNames     = []string{"John", "Alice", "Bob", "Emma", "Liam", "Sophia", "David", "Olivia"}
-	lastNames      = []string{"Doe", "Smith", "Johnson", "Brown", "Williams", "Jones", "Garcia"}
-	subjects       = []string{"Math", "Physics", "Chemistry", "Biology", "History", "English"}
-	roles          = []string{"admin", "manager"}
-	classroomNames = []string{"1A", "1B", "2A", "2B", "3A", "3B", "4A", "4B"}
+	firstNames = []string{
+		"John", "Alice", "Bob", "Emma", "Liam", "Sophia", "David", "Olivia",
+		"Michael", "Isabella", "Daniel", "Mia", "James", "Charlotte", "William", "Amelia",
+		"Henry", "Evelyn", "Alexander", "Harper", "Matthew", "Abigail", "Joseph", "Ella",
+		"Samuel", "Avery", "Owen", "Scarlet", "Lucas", "Victoria",
+	}
+
+	lastNames = []string{
+		"Doe", "Smith", "Johnson", "Brown", "Williams", "Jones", "Garcia",
+		"Miller", "Davis", "Rodriguez", "Martinez", "Hernandez", "Lopez", "Gonzalez",
+		"Wilson", "Anderson", "Thomas", "Taylor", "Moore", "Jackson",
+	}
+
+	subjects = []string{
+		"Math", "Physics", "Chemistry", "Biology", "History", "English",
+		"Geography", "Computer Science", "Art", "Music", "Physical Education",
+		"Economics", "Philosophy", "Psychology", "Sociology", "Literature", "French", "Spanish",
+	}
+
+	roles = []string{
+		"admin", "manager",
+	}
+
+	classroomNames = []string{
+		"1A", "1B", "2A", "2B", "3A", "3B", "4A", "4B", "5A", "5B", "6A", "6B",
+	}
 )
 
 // Seed populates the database
