@@ -33,7 +33,7 @@ type StudentRegisterPayload struct {
 	Email             string    `json:"email" validate:"required,email"`
 	Password          string    `json:"password" validate:"required,min=8,max=72"`
 	PhoneNumber       *string   `json:"phone_number"`
-	Class             string    `json:"class" validate:"required"`
+	ClassRoomID       int64     `json:"classroom_id" validate:"required"`
 	BirthDate         time.Time `json:"birth_date" validate:"required"`
 	Address           string    `json:"address" validate:"required"`
 	ParentName        string    `json:"parent_name" validate:"required"`
@@ -157,7 +157,7 @@ func (app *application) registerStudentHandler(w http.ResponseWriter, r *http.Re
 		LastName:          payload.LastName,
 		Email:             payload.Email,
 		PhoneNumber:       payload.PhoneNumber,
-		Class:             payload.Class,
+		ClassRoomID:       payload.ClassRoomID,
 		BirthDate:         payload.BirthDate,
 		Address:           payload.Address,
 		ParentName:        payload.ParentName,

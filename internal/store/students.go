@@ -14,7 +14,7 @@ type Student struct {
 	Email             string    `json:"email"`
 	Password          password  `json:"-"`
 	PhoneNumber       *string   `json:"phone_number"`
-	Class             string    `json:"class"`
+	ClassRoomID       int64     `json:"classroom_id"`
 	BirthDate         time.Time `json:"birth_date"`
 	Address           string    `json:"address"`
 	ParentName        string    `json:"parent_name"`
@@ -30,7 +30,8 @@ type StudentStore struct {
 
 func (s *StudentStore) Create(ctx context.Context, student *Student) error {
 	query := `
-		INSERT INTO students (first_name, last_name, email, password, phone_number, class, birth_date, address, parent_name, parent_phone_number, teacher_id)
+		INSERT INTO students
+		(first_name, last_name, email, password, phone_number, classroom_id, birth_date, address, parent_name, parent_phone_number, teacher_id)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
 		RETURNING id, created_at, updated_at
 	`
@@ -45,7 +46,7 @@ func (s *StudentStore) Create(ctx context.Context, student *Student) error {
 		student.Email,
 		student.Password.hash,
 		student.PhoneNumber,
-		student.Class,
+		student.ClassRoomID,
 		student.BirthDate,
 		student.Address,
 		student.ParentName,
@@ -56,20 +57,16 @@ func (s *StudentStore) Create(ctx context.Context, student *Student) error {
 		&student.CreatedAt,
 		&student.UpdatedAt,
 	)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
 
 func (s *StudentStore) GetAll(ctx context.Context, pq PaginatedQuery) ([]*Student, error) {
 	columns := []string{
-		"id", "first_name", "last_name", "email", "phone_number", "class",
+		"id", "first_name", "last_name", "email", "phone_number", "classroom_id",
 		"birth_date", "address", "parent_name", "parent_phone_number",
 		"teacher_id", "created_at", "updated_at",
 	}
-	searchCols := []string{"first_name", "last_name", "email", "class", "parent_name"}
+	searchCols := []string{"first_name", "last_name", "email", "classroom_id", "parent_name"}
 
 	query, args := BuildPaginatedQuery("students", columns, pq, searchCols)
 
@@ -91,7 +88,7 @@ func (s *StudentStore) GetAll(ctx context.Context, pq PaginatedQuery) ([]*Studen
 			&s.LastName,
 			&s.Email,
 			&s.PhoneNumber,
-			&s.Class,
+			&s.ClassRoomID,
 			&s.BirthDate,
 			&s.Address,
 			&s.ParentName,
@@ -114,10 +111,10 @@ func (s *StudentStore) GetAll(ctx context.Context, pq PaginatedQuery) ([]*Studen
 
 func (s *StudentStore) GetByID(ctx context.Context, id int64) (*Student, error) {
 	query := `
-		SELECT id, first_name, last_name, email, phone_number, class, birth_date, address, parent_name, parent_phone_number, teacher_id, created_at, updated_at
-		FROM students
-		WHERE id = $1
-	`
+	SELECT id, first_name, last_name, email, phone_number, classroom_id, birth_date, address, parent_name, parent_phone_number, teacher_id, created_at, updated_at
+	FROM students
+	WHERE id = $1
+`
 
 	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
 	defer cancel()
@@ -129,7 +126,7 @@ func (s *StudentStore) GetByID(ctx context.Context, id int64) (*Student, error) 
 		&t.LastName,
 		&t.Email,
 		&t.PhoneNumber,
-		&t.Class,
+		&t.ClassRoomID,
 		&t.BirthDate,
 		&t.Address,
 		&t.ParentName,
@@ -151,7 +148,7 @@ func (s *StudentStore) GetByID(ctx context.Context, id int64) (*Student, error) 
 
 func (s *StudentStore) GetByEmail(ctx context.Context, email string) (*Student, error) {
 	query := `
-		SELECT id, first_name, last_name, email, phone_number, class, birth_date, address, parent_name, parent_phone_number, teacher_id, created_at, updated_at
+		SELECT id, first_name, last_name, email, phone_number, classroom_id, birth_date, address, parent_name, parent_phone_number, teacher_id, created_at, updated_at
 		FROM students
 		WHERE email = $1
 	`
@@ -166,7 +163,7 @@ func (s *StudentStore) GetByEmail(ctx context.Context, email string) (*Student, 
 		&t.LastName,
 		&t.Email,
 		&t.PhoneNumber,
-		&t.Class,
+		&t.ClassRoomID,
 		&t.BirthDate,
 		&t.Address,
 		&t.ParentName,
@@ -188,21 +185,21 @@ func (s *StudentStore) GetByEmail(ctx context.Context, email string) (*Student, 
 
 func (s *StudentStore) Update(ctx context.Context, student *Student) error {
 	query := `
-		UPDATE students
-		SET first_name = $1,
-		    last_name = $2,
-		    email = $3,
-		    phone_number = $4,
-		    class = $5,
-		    birth_date = $6,
-		    address = $7,
-		    parent_name = $8,
-		    parent_phone_number = $9,
-			teacher_id = $10,
-		    updated_at = NOW()
-		WHERE id = $11
-		RETURNING updated_at
-	`
+	UPDATE students
+	SET first_name = $1,
+	    last_name = $2,
+	    email = $3,
+	    phone_number = $4,
+	    classroom_id = $5,
+	    birth_date = $6,
+	    address = $7,
+	    parent_name = $8,
+	    parent_phone_number = $9,
+	    teacher_id = $10,
+	    updated_at = NOW()
+	WHERE id = $11
+	RETURNING updated_at
+`
 
 	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
 	defer cancel()
@@ -212,7 +209,7 @@ func (s *StudentStore) Update(ctx context.Context, student *Student) error {
 		student.LastName,
 		student.Email,
 		student.PhoneNumber,
-		student.Class,
+		student.ClassRoomID,
 		student.BirthDate,
 		student.Address,
 		student.ParentName,

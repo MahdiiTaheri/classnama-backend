@@ -148,6 +148,22 @@ func (app *application) mount() http.Handler {
 			})
 		})
 
+		r.Route("/classrooms", func(r chi.Router) {
+			r.Group(func(r chi.Router) {
+				r.Use(app.AuthTokenMiddleware)
+				r.Use(app.requireRole("admin", "manager")) // only execs can access
+				r.Post("/", app.registerClassroomHandler)
+				r.Get("/", app.getClassroomsHandler)
+
+				r.Route("/{classroomID}", func(r chi.Router) {
+					r.Use(app.classroomsContextMiddleware)
+					r.Get("/", app.getClassroomHandler)
+					r.Patch("/", app.updateClassroomHandler)
+					r.Delete("/", app.deleteClassroomHandler)
+				})
+			})
+		})
+
 	})
 
 	return r

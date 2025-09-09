@@ -58,12 +58,20 @@ type Storage struct {
 		Delete(context.Context, int64) error
 		GetByTeacherID(ctx context.Context, teacherID int64) ([]*Student, error)
 	}
+	Classrooms interface {
+		Create(context.Context, *Classroom) error
+		GetAll(context.Context, PaginatedQuery) ([]*Classroom, error)
+		GetByID(context.Context, int64) (*Classroom, error)
+		Update(context.Context, *Classroom) error
+		Delete(context.Context, int64) error
+	}
 }
 
 func NewStorage(db *sql.DB) Storage {
 	return Storage{
-		Execs:    &ExecStore{db},
-		Teachers: &TeacherStore{db},
-		Students: &StudentStore{db},
+		Execs:      &ExecStore{db},
+		Teachers:   &TeacherStore{db},
+		Students:   &StudentStore{db},
+		Classrooms: &classroomStore{db},
 	}
 }

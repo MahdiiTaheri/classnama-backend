@@ -995,7 +995,7 @@ const docTemplate = `{
             "required": [
                 "address",
                 "birth_date",
-                "class",
+                "classroom_id",
                 "email",
                 "first_name",
                 "last_name",
@@ -1011,8 +1011,8 @@ const docTemplate = `{
                 "birth_date": {
                     "type": "string"
                 },
-                "class": {
-                    "type": "string"
+                "classroom_id": {
+                    "type": "integer"
                 },
                 "email": {
                     "type": "string"
@@ -1121,9 +1121,9 @@ const docTemplate = `{
                 "birth_date": {
                     "type": "string"
                 },
-                "class": {
-                    "type": "string",
-                    "maxLength": 16
+                "classroom_id": {
+                    "type": "integer",
+                    "maximum": 16
                 },
                 "email": {
                     "type": "string"
@@ -1223,8 +1223,8 @@ const docTemplate = `{
                 "birth_date": {
                     "type": "string"
                 },
-                "class": {
-                    "type": "string"
+                "classroom_id": {
+                    "type": "integer"
                 },
                 "created_at": {
                     "type": "string"

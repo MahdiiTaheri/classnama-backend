@@ -12,11 +12,11 @@ import (
 
 // Sample data for seeding
 var (
-	firstNames = []string{"John", "Alice", "Bob", "Emma", "Liam", "Sophia", "David", "Olivia"}
-	lastNames  = []string{"Doe", "Smith", "Johnson", "Brown", "Williams", "Jones", "Garcia"}
-	subjects   = []string{"Math", "Physics", "Chemistry", "Biology", "History", "English"}
-	classes    = []string{"1A", "1B", "2A", "2B", "3A", "3B"}
-	roles      = []string{"admin", "manager"}
+	firstNames     = []string{"John", "Alice", "Bob", "Emma", "Liam", "Sophia", "David", "Olivia"}
+	lastNames      = []string{"Doe", "Smith", "Johnson", "Brown", "Williams", "Jones", "Garcia"}
+	subjects       = []string{"Math", "Physics", "Chemistry", "Biology", "History", "English"}
+	roles          = []string{"admin", "manager"}
+	classroomNames = []string{"1A", "1B", "2A", "2B", "3A", "3B", "4A", "4B"}
 )
 
 // Seed populates the database
@@ -36,6 +36,14 @@ func Seed(store store.Storage) {
 		}
 	}
 
+	// 3. Seed Classrooms
+	classrooms := generateClassrooms(10, rng) // generate 10 classrooms
+	for _, c := range classrooms {
+		if err := store.Classrooms.Create(ctx, c); err != nil {
+			log.Println("Error creating classroom:", err)
+		}
+	}
+
 	// 2. Seed Teachers
 	teachers := generateTeachers(30, rng)
 	for _, t := range teachers {
@@ -49,7 +57,7 @@ func Seed(store store.Storage) {
 	}
 
 	// 3. Seed Students
-	students := generateStudents(300, teachers, rng)
+	students := generateStudents(300, teachers, classrooms, rng)
 	for _, s := range students {
 		if err := s.Password.Set("password123"); err != nil {
 			log.Println("Error setting student password:", err)
@@ -93,16 +101,18 @@ func generateTeachers(n int, rng *rand.Rand) []*store.Teacher {
 	return teachers
 }
 
-// Generate random students assigned to teachers
-func generateStudents(n int, teachers []*store.Teacher, rng *rand.Rand) []*store.Student {
+// Generate random students assigned to teachers and classrooms
+func generateStudents(n int, teachers []*store.Teacher, classrooms []*store.Classroom, rng *rand.Rand) []*store.Student {
 	students := make([]*store.Student, n)
-	for i := range n {
+	for i := range students { // <- use 'students' here
 		teacher := teachers[rng.Intn(len(teachers))]
+		classroom := classrooms[rng.Intn(len(classrooms))] // pick a random classroom
+
 		students[i] = &store.Student{
 			FirstName:         firstNames[rng.Intn(len(firstNames))],
 			LastName:          lastNames[rng.Intn(len(lastNames))],
 			Email:             fmt.Sprintf("student%d@example.com", i),
-			Class:             classes[rng.Intn(len(classes))],
+			ClassRoomID:       classroom.ID,                              // assign classroom ID
 			BirthDate:         time.Now().AddDate(-10-rng.Intn(8), 0, 0), // age 10–18
 			Address:           fmt.Sprintf("Street %d", i),
 			ParentName:        firstNames[rng.Intn(len(firstNames))] + " " + lastNames[rng.Intn(len(lastNames))],
@@ -112,4 +122,16 @@ func generateStudents(n int, teachers []*store.Teacher, rng *rand.Rand) []*store
 		}
 	}
 	return students
+}
+
+func generateClassrooms(n int, rng *rand.Rand) []*store.Classroom {
+	classrooms := make([]*store.Classroom, n)
+	for i := range n {
+		classrooms[i] = &store.Classroom{
+			Name:     classroomNames[rng.Intn(len(classroomNames))],
+			Capacity: int64(20 + rng.Intn(10)), // 20–30 students
+			Grade:    int64(rng.Intn(12) + 1),  // random grade 1-12
+		}
+	}
+	return classrooms
 }

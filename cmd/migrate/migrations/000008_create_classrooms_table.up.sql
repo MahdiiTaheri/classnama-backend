@@ -1,0 +1,8 @@
+CREATE TABLE classrooms (
+    id BIGSERIAL PRIMARY KEY,
+    name VARCHAR(10) NOT NULL,
+    grade INT NOT NULL,
+    capacity INT NOT NULL DEFAULT 30,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);

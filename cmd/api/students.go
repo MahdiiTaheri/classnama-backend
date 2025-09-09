@@ -9,7 +9,6 @@ import (
 
 	"github.com/MahdiiTaheri/classnama-backend/internal/store"
 	"github.com/MahdiiTaheri/classnama-backend/internal/store/cache"
-	"github.com/MahdiiTaheri/classnama-backend/internal/utils"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -22,7 +21,7 @@ type UpdateStudentPayload struct {
 	LastName          *string `json:"last_name,omitempty" validate:"omitempty,max=72"`
 	Email             *string `json:"email,omitempty" validate:"omitempty,email"`
 	PhoneNumber       *string `json:"phone_number,omitempty" validate:"omitempty,e164"`
-	Class             *string `json:"class,omitempty" validate:"omitempty,max=16"`
+	ClassRoomID       *int64  `json:"classroom_id,omitempty" validate:"omitempty,max=16"`
 	BirthDate         *string `json:"birth_date,omitempty" validate:"omitempty,datetime=2006-01-02"`
 	Address           *string `json:"address,omitempty" validate:"omitempty,max=256"`
 	ParentName        *string `json:"parent_name,omitempty" validate:"omitempty,max=128"`
@@ -149,7 +148,7 @@ func (app *application) updateStudentHandler(w http.ResponseWriter, r *http.Requ
 	}
 
 	// Apply non-nil fields using reflection
-	utils.ApplyPatch(student, payload)
+	// utils.ApplyPatch(student, payload)
 
 	// Update in DB
 	if err := app.store.Students.Update(r.Context(), student); err != nil {

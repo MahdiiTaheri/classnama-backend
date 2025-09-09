@@ -9,7 +9,6 @@ import (
 
 	"github.com/MahdiiTaheri/classnama-backend/internal/store"
 	"github.com/MahdiiTaheri/classnama-backend/internal/store/cache"
-	"github.com/MahdiiTaheri/classnama-backend/internal/utils"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -139,7 +138,7 @@ func (app *application) updateExecHandler(w http.ResponseWriter, r *http.Request
 	}
 
 	// Apply non-nil fields using reflection
-	utils.ApplyPatch(exec, payload)
+	// utils.ApplyPatch(exec, payload)
 
 	// Update in DB
 	if err := app.store.Execs.Update(r.Context(), exec); err != nil {
