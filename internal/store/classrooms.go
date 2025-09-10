@@ -12,6 +12,7 @@ type Classroom struct {
 	Name      string    `json:"name"`
 	Capacity  int64     `json:"capacity"`
 	Grade     int64     `json:"grade"`
+	TeacherID int64     `json:"teacher_id"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
@@ -34,24 +35,24 @@ func NewClassroomStore(db *sql.DB) ClassroomStore {
 
 func (s *classroomStore) Create(ctx context.Context, classroom *Classroom) error {
 	query := `
-		INSERT INTO classrooms (name, capacity, grade)
-		VALUES ($1, $2, $3)
+		INSERT INTO classrooms (name, capacity, grade, teacher_id)
+		VALUES ($1, $2, $3, $4)
 		RETURNING id, created_at, updated_at
 	`
-	return s.db.QueryRowContext(ctx, query, classroom.Name, classroom.Capacity, classroom.Grade).
+	return s.db.QueryRowContext(ctx, query, classroom.Name, classroom.Capacity, classroom.Grade, classroom.TeacherID).
 		Scan(&classroom.ID, &classroom.CreatedAt, &classroom.UpdatedAt)
 }
 
 func (s *classroomStore) GetByID(ctx context.Context, id int64) (*Classroom, error) {
 	query := `
-		SELECT id, name, capacity, grade, created_at, updated_at
+		SELECT id, name, capacity, grade, teacher_id, created_at, updated_at
 		FROM classrooms
 		WHERE id = $1
 	`
 	row := s.db.QueryRowContext(ctx, query, id)
 
 	var c Classroom
-	err := row.Scan(&c.ID, &c.Name, &c.Capacity, &c.Grade, &c.CreatedAt, &c.UpdatedAt)
+	err := row.Scan(&c.ID, &c.Name, &c.Capacity, &c.Grade, &c.TeacherID, &c.CreatedAt, &c.UpdatedAt)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, ErrNotFound
@@ -62,7 +63,7 @@ func (s *classroomStore) GetByID(ctx context.Context, id int64) (*Classroom, err
 }
 
 func (s *classroomStore) GetAll(ctx context.Context, pq PaginatedQuery) ([]*Classroom, error) {
-	columns := []string{"id", "name", "capacity", "grade", "created_at", "updated_at"}
+	columns := []string{"id", "name", "capacity", "grade", "created_at", "updated_at", "teacher_id"}
 	searchCols := []string{"name"}
 
 	query, args := BuildPaginatedQuery("classrooms", columns, pq, searchCols)
@@ -102,13 +103,13 @@ func (s *classroomStore) GetAll(ctx context.Context, pq PaginatedQuery) ([]*Clas
 func (s *classroomStore) Update(ctx context.Context, classroom *Classroom) error {
 	query := `
 		UPDATE classrooms
-		SET name = $1, capacity = $2, grade = $3, updated_at = NOW()
-		WHERE id = $4
+		SET name = $1, capacity = $2, grade = $3,teacher_id = $4 , updated_at = NOW()
+		WHERE id = $5
 		RETURNING updated_at
 	`
 
 	err := s.db.QueryRowContext(ctx, query,
-		classroom.Name, classroom.Capacity, classroom.Grade, classroom.ID,
+		classroom.Name, classroom.Capacity, classroom.Grade, classroom.TeacherID, classroom.ID,
 	).Scan(&classroom.UpdatedAt)
 
 	if errors.Is(err, sql.ErrNoRows) {

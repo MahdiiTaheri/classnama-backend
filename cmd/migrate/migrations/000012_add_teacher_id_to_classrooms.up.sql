@@ -1,0 +1,2 @@
+ALTER TABLE classrooms
+ADD COLUMN teacher_id BIGINT NOT NULL REFERENCES teachers(id) ON DELETE CASCADE;
