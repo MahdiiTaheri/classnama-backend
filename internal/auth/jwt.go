@@ -27,16 +27,18 @@ func (a *JWTAuthenticator) GenerateToken(claims jwt.Claims) (string, error) {
 	return tokenString, nil
 }
 
-func (a *JWTAuthenticator) ValidateToken(token string) (*jwt.Token, error) {
-	return jwt.Parse(token, func(t *jwt.Token) (any, error) {
+func (a *JWTAuthenticator) ValidateToken(tokenStr string) (*jwt.Token, error) {
+	claims := &Claims{}
+	token, err := jwt.ParseWithClaims(tokenStr, claims, func(t *jwt.Token) (any, error) {
 		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method %v", t.Header["alg"])
 		}
-
 		return []byte(a.secret), nil
-	}, jwt.WithExpirationRequired(),
-		jwt.WithAudience(a.aud),
-		jwt.WithIssuer(a.aud),
-		jwt.WithValidMethods([]string{jwt.SigningMethodHS256.Name}),
-	)
+	}, jwt.WithAudience(a.aud), jwt.WithIssuer(a.iss), jwt.WithValidMethods([]string{jwt.SigningMethodHS256.Name}))
+
+	if err != nil {
+		return nil, err
+	}
+
+	return token, nil
 }

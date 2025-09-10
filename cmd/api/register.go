@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/MahdiiTaheri/classnama-backend/internal/auth"
 	"github.com/MahdiiTaheri/classnama-backend/internal/store"
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -81,7 +82,7 @@ func (app *application) registerExecHandler(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	app.createAndRespondJWT(w, r, exec, string(exec.Role))
+	app.createAndRespondJWT(w, r, exec, string(exec.Role), exec.Email)
 }
 
 // registerTeacherHandler godoc
@@ -182,6 +183,7 @@ func (app *application) createAndRespondJWT(
 	r *http.Request,
 	entity any,
 	role string,
+	email string,
 ) {
 	var id int64
 	switch v := entity.(type) {
@@ -196,14 +198,18 @@ func (app *application) createAndRespondJWT(
 		return
 	}
 
-	claims := jwt.MapClaims{
-		"sub":  id,
-		"role": role,
-		"exp":  time.Now().Add(app.config.auth.token.exp).Unix(),
-		"iat":  time.Now().Unix(),
-		"nbf":  time.Now().Unix(),
-		"iss":  app.config.auth.token.iss,
-		"aud":  app.config.auth.token.iss,
+	claims := &auth.Claims{
+		ID:    id,
+		Role:  role,
+		Email: email,
+		RegisteredClaims: jwt.RegisteredClaims{
+			Subject:   fmt.Sprint(id),
+			Issuer:    app.config.auth.token.iss,
+			Audience:  []string{app.config.auth.token.iss},
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(app.config.auth.token.exp)),
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
+			NotBefore: jwt.NewNumericDate(time.Now()),
+		},
 	}
 
 	token, err := app.authenticator.GenerateToken(claims)

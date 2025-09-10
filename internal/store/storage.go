@@ -32,6 +32,14 @@ func (p *password) Set(text string) error {
 	return nil
 }
 
+func (p *password) Check(text string) bool {
+	if p == nil || p.hash == nil {
+		return false
+	}
+	err := bcrypt.CompareHashAndPassword(p.hash, []byte(text))
+	return err == nil
+}
+
 type Storage struct {
 	Execs interface {
 		Create(context.Context, *Exec) error

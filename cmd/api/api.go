@@ -168,10 +168,10 @@ func (app *application) mount() http.Handler {
 			r.Group(func(r chi.Router) {
 				r.Use(app.AuthTokenMiddleware)
 				r.Use(app.requireRole("admin", "manager", "teacher"))
-				r.Post("/", app.markAttendanceHandler)                                      // POST /v1/attendance
-				r.Post("/bulk", app.bulkMarkAttendanceHandler)                              // POST /v1/attendance/bulk
-				r.Get("/students/{studentID}", app.getAttendanceByStudentHandler)           // GET /v1/attendance/students/{id}
-				r.Get("/classrooms/{classroomID}", app.getAttendanceByClassroomDateHandler) // GET /v1/attendance/classrooms/{id}?date=YYYY-MM-DD
+				r.Post("/", app.markAttendanceHandler)
+				r.Post("/bulk", app.bulkMarkAttendanceHandler)
+				r.Get("/students/{studentID}", app.getAttendanceByStudentHandler)
+				r.Get("/classrooms/{classroomID}", app.getAttendanceByClassroomDateHandler)
 			})
 		})
 

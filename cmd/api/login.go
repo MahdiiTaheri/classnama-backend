@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/MahdiiTaheri/classnama-backend/internal/auth"
 	"github.com/MahdiiTaheri/classnama-backend/internal/store"
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -50,27 +51,43 @@ func (app *application) loginHandler(
 
 	switch v := entity.(type) {
 	case *store.Exec:
+		if !v.Password.Check(payload.Password) {
+			app.unauthorizedResponse(w, r, fmt.Errorf("invalid credentials"))
+			return
+		}
 		id = v.ID
-		role = string(v.Role) // Exec has a role column
+		role = string(v.Role)
 	case *store.Teacher:
+		if !v.Password.Check(payload.Password) {
+			app.unauthorizedResponse(w, r, fmt.Errorf("invalid credentials"))
+			return
+		}
 		id = v.ID
-		role = "teacher" // fixed role for JWT
+		role = "teacher"
 	case *store.Student:
+		if !v.Password.Check(payload.Password) {
+			app.unauthorizedResponse(w, r, fmt.Errorf("invalid credentials"))
+			return
+		}
 		id = v.ID
-		role = "student" // fixed role for JWT
+		role = "student"
 	default:
 		app.internalServerErrorResponse(w, r, fmt.Errorf("unsupported entity type"))
 		return
 	}
 
-	claims := jwt.MapClaims{
-		"sub":  id,
-		"role": role,
-		"exp":  time.Now().Add(app.config.auth.token.exp).Unix(),
-		"iat":  time.Now().Unix(),
-		"nbf":  time.Now().Unix(),
-		"iss":  app.config.auth.token.iss,
-		"aud":  app.config.auth.token.iss,
+	claims := &auth.Claims{
+		ID:    id,
+		Email: payload.Email,
+		Role:  role,
+		RegisteredClaims: jwt.RegisteredClaims{
+			Subject:   fmt.Sprint(id),
+			Issuer:    app.config.auth.token.iss,
+			Audience:  []string{app.config.auth.token.iss},
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(app.config.auth.token.exp)),
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
+			NotBefore: jwt.NewNumericDate(time.Now()),
+		},
 	}
 
 	token, err := app.authenticator.GenerateToken(claims)

@@ -148,7 +148,7 @@ func (s *StudentStore) GetByID(ctx context.Context, id int64) (*Student, error) 
 
 func (s *StudentStore) GetByEmail(ctx context.Context, email string) (*Student, error) {
 	query := `
-		SELECT id, first_name, last_name, email, phone_number, classroom_id, birth_date, address, parent_name, parent_phone_number, teacher_id, created_at, updated_at
+		SELECT id, first_name, last_name, email, password, phone_number, classroom_id, birth_date, address, parent_name, parent_phone_number, teacher_id, created_at, updated_at
 		FROM students
 		WHERE email = $1
 	`
@@ -162,6 +162,7 @@ func (s *StudentStore) GetByEmail(ctx context.Context, email string) (*Student, 
 		&t.FirstName,
 		&t.LastName,
 		&t.Email,
+		&t.Password.hash,
 		&t.PhoneNumber,
 		&t.ClassRoomID,
 		&t.BirthDate,
